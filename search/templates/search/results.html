@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Search Results</title>
+</head>
+
+<body>
+    <h1>Search Results</h1>
+    {% if results %}
+    <ul>
+        {% for result in results %}
+        <li>
+            <a href="{{ result.url }}">{{ result.name}}</a> - {{ result.price }}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No results found.</p>
+    {% endif %}
+</body>
+
+</html>
