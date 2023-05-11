@@ -16,8 +16,8 @@ class Product:
     currency: str
     vat: bool
     url: str
-    picture_url: str
     shop: str
+    picture_url: str = "static/images/device.png"
 
 
 async def fetch_url(session, url):

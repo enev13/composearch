@@ -6,19 +6,28 @@
 </head>
 
 <body>
-    <h1>Search Results</h1>
-    {% if results %}
-    <ul>
-        {% for result in results %}
-        <li>
-            <img src="{{ result.picture_url }}" alt={{ result.name}}" height="42" width="42">
-            <a href="{{ result.url }}">{{ result.name}}</a> - {{ result.price }} ({{ result.shop }})
-        </li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>No results found.</p>
-    {% endif %}
+    {% extends 'search/index.html' %}
+
+    {% block content %}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="py-12 text-center">
+            <h2 class="text-2xl font-medium text-gray-900">Search results for "{{ query }}"</h2>
+            {% if results %}
+            <ul class="mt-6 border-t border-gray-200 divide-y divide-gray-200">
+                {% for result in results %}
+                <li class="py-4">
+                    <img src="{{ result.picture_url }}" alt={{ result.name}}" height="42" width="42">
+                    <a href="{{ result.url }}" class="text-xl font-medium text-teal-600 hover:text-teal-900">{{
+                        result.name }}</a> - {{ result.price }} ({{ result.shop }})
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="mt-6 text-xl text-gray-500">No results found.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% endblock %}
 </body>
 
 </html>

@@ -18,4 +18,4 @@ async def results_view(request):
     else:
         results = []
 
-    return render(request, "search/results.html", {"results": results})
+    return render(request, "search/results.html", {"results": results, "query": query})
