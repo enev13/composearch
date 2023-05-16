@@ -1,4 +1,5 @@
 import asyncio
+import re
 from dataclasses import dataclass
 from urllib.parse import urljoin
 
@@ -7,6 +8,8 @@ from asgiref.sync import sync_to_async
 from bs4 import BeautifulSoup
 
 from search.models import DistributorSourceModel
+
+DEFAULT_PICTURE = "/static/images/device.png"
 
 
 @dataclass
@@ -17,7 +20,18 @@ class Product:
     vat: bool
     url: str
     shop: str
-    picture_url: str = "static/images/device.png"
+    picture_url: str
+
+
+def to_float(text):
+    pattern = r"\b[-+]?\d{1,3}(?:([.,])\d{3})*([.,]\d+)?\b"
+    match = re.search(pattern, text)
+    if match:
+        if match.group(1) == ",":
+            return float(match.group().replace(".", "").replace(",", "."))
+        return float(match.group().replace(",", "."))
+    else:
+        return None
 
 
 async def fetch_url(session, url):
@@ -32,6 +46,7 @@ def get_distributors():
 
 async def perform_search(query):
     distributors = await get_distributors()
+    distributors = [distributor for distributor in distributors if distributor.active]
     urls = [
         distributor.base_url + distributor.search_string.replace("%s", query) for distributor in distributors
     ]
@@ -54,8 +69,7 @@ async def perform_search(query):
         if product_name:
             try:
                 name = product_name[0].text.strip()
-                price = soup.select(distributor.product_price_selector)
-                price = soup.select(distributor.product_price_selector)[0].text.strip()
+                price = to_float(soup.select(distributor.product_price_selector)[0].text.strip())
                 currency = distributor.currency
                 vat = (distributor.including_vat,)
                 url = (
@@ -74,6 +88,8 @@ async def perform_search(query):
                     )
                     picture_url = picture_url[1:] if picture_url.startswith("/") else picture_url
                     picture_url = urljoin(distributor.base_url, picture_url)
+                else:
+                    picture_url = DEFAULT_PICTURE
                 product = Product(
                     name=name,
                     price=price,

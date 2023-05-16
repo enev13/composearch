@@ -6,22 +6,33 @@
 </head>
 
 <body>
-    {% extends 'search/index.html' %}
-
-    {% block content %}
+    {% extends 'search/index.html' %} {% block content %}
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="py-12 text-center">
-            <h2 class="text-2xl font-medium text-gray-900">Search results for "{{ query }}"</h2>
+            <h2 class="text-2xl font-medium text-gray-900">
+                Search results for "{{ query }}"
+            </h2>
             {% if results %}
-            <ul class="mt-6 border-t border-gray-200 divide-y divide-gray-200">
-                {% for result in results %}
-                <li class="py-4">
-                    <img src="{{ result.picture_url }}" alt={{ result.name}}" height="42" width="42">
-                    <a href="{{ result.url }}" class="text-xl font-medium text-teal-600 hover:text-teal-900">{{
-                        result.name }}</a> - {{ result.price }} ({{ result.shop }})
-                </li>
-                {% endfor %}
-            </ul>
+            <table class="mt-6 w-full border-collapse border border-gray-300 text-left">
+                <tbody class="divide-y divide-gray-300">
+                    {% for result in results %}
+                    <tr>
+                        <td class="p-3">
+                            <a href="{{ result.url }}">
+                                <img src="{{ result.picture_url }}" alt="{{ result.name }}" height="42" width="42" />
+                            </a>
+                        </td>
+                        <td class="p-3">
+                            <a href="{{ result.url }}" class="text-l font-medium text-teal-600 hover:text-teal-900">
+                                {{ result.name }}
+                            </a>
+                        </td>
+                        <td class="p-3">{{ result.price|floatformat:2 }} {{ result.currency }}</td>
+                        <td class="p-3">{{ result.shop }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
             {% else %}
             <p class="mt-6 text-xl text-gray-500">No results found.</p>
             {% endif %}
