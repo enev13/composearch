@@ -35,8 +35,13 @@ def to_float(text):
 
 
 async def fetch_url(session, url):
-    async with session.get(url) as response:
-        return await response.text()
+    try:
+        async with session.get(url) as response:
+            return await response.text()
+    except aiohttp.client_exceptions.ClientConnectorError as ex:
+        print(ex)
+    except Exception as ex:
+        print(ex)
 
 
 @sync_to_async
@@ -64,45 +69,46 @@ async def perform_search(query):
 
     products = []
     for result, distributor in zip(results, distributors):
-        soup = BeautifulSoup(result, "html.parser")
-        product_name = soup.select(distributor.product_name_selector)
-        if product_name:
-            try:
-                name = product_name[0].text.strip()
-                price = to_float(soup.select(distributor.product_price_selector)[0].text.strip())
-                currency = distributor.currency
-                vat = (distributor.including_vat,)
-                url = (
-                    soup.select(distributor.product_url_selector)[0]
-                    .get("href")
-                    .replace(distributor.base_url, "")
-                )
-                url = url[1:] if url.startswith("/") else url
-                url = urljoin(distributor.base_url, url)
-                picture_url = soup.select(distributor.product_picture_url_selector)
-                if picture_url:
-                    picture_url = (
-                        soup.select(distributor.product_picture_url_selector)[0]
-                        .get("src")
+        if result:
+            soup = BeautifulSoup(result, "html.parser")
+            product_name = soup.select(distributor.product_name_selector)
+            if product_name:
+                try:
+                    name = product_name[0].text.strip()
+                    price = to_float(soup.select(distributor.product_price_selector)[0].text.strip())
+                    currency = distributor.currency
+                    vat = (distributor.including_vat,)
+                    url = (
+                        soup.select(distributor.product_url_selector)[0]
+                        .get("href")
                         .replace(distributor.base_url, "")
                     )
-                    picture_url = picture_url[1:] if picture_url.startswith("/") else picture_url
-                    picture_url = urljoin(distributor.base_url, picture_url)
-                else:
-                    picture_url = DEFAULT_PICTURE
-                product = Product(
-                    name=name,
-                    price=price,
-                    currency=currency,
-                    vat=vat,
-                    url=url,
-                    picture_url=picture_url,
-                    shop=distributor.name,
-                )
-            except IndexError as ex:
-                print(ex)
+                    url = url[1:] if url.startswith("/") else url
+                    url = urljoin(distributor.base_url, url)
+                    picture_url = soup.select(distributor.product_picture_url_selector)
+                    if picture_url:
+                        picture_url = (
+                            soup.select(distributor.product_picture_url_selector)[0]
+                            .get("src")
+                            .replace(distributor.base_url, "")
+                        )
+                        picture_url = picture_url[1:] if picture_url.startswith("/") else picture_url
+                        picture_url = urljoin(distributor.base_url, picture_url)
+                    else:
+                        picture_url = DEFAULT_PICTURE
+                    product = Product(
+                        name=name,
+                        price=price,
+                        currency=currency,
+                        vat=vat,
+                        url=url,
+                        picture_url=picture_url,
+                        shop=distributor.name,
+                    )
+                except IndexError as ex:
+                    print(ex)
+                    continue
+            else:
                 continue
-        else:
-            continue
-        products.append(product)
+            products.append(product)
     return products
