@@ -11,6 +11,7 @@ class DistributorSourceModel(models.Model):
     product_url_selector = models.CharField(max_length=1024, null=False, blank=False)
     product_picture_url_selector = models.CharField(max_length=1024, null=False, blank=False)
     product_price_selector = models.CharField(max_length=1024, null=False, blank=False)
+    active = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"{self.id} - {self.name} ({self.base_url})"
+        return f"{self.name} ({self.base_url}){' - INACTIVE' if not self.active else ''}"
