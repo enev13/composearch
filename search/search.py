@@ -3,7 +3,7 @@ import re
 from dataclasses import dataclass
 from urllib.parse import urljoin
 
-import aiohttp
+from playwright.async_api import async_playwright
 from asgiref.sync import sync_to_async
 from bs4 import BeautifulSoup
 
@@ -35,14 +35,20 @@ def to_float(text):
         return None
 
 
-async def fetch_url(session, url):
+async def fetch_url(url, price_selector):
     try:
-        async with session.get(url) as response:
-            ret = await response.text()
-            print("Fetched url: ", url)
-            return ret
+        async with async_playwright() as playwright:
+            browser = await playwright.firefox.launch()
+            page = await browser.new_page()
+            await page.goto(url)
+            price_loaded = page.locator(price_selector)
+            await price_loaded.wait_for()
+            html_content = await page.content()
+            await browser.close()
+            print(f"Fetched url: {url}, length: {len(html_content)}")
+            return html_content
     except Exception as ex:
-        print("Error fetching url: ", url)
+        print(f"Error fetching url: {url}")
         print(ex)
 
 
@@ -95,6 +101,7 @@ def parse_results(distributors, results):
                     print(distributor.name, ex)
                     continue
             else:
+                print(f"Product name not found for {distributor.name}")
                 continue
             products.append(product)
             products.sort(key=lambda x: x.price)
@@ -107,16 +114,10 @@ async def perform_search(query):
     urls = [
         distributor.base_url + distributor.search_string.replace("%s", query) for distributor in distributors
     ]
-    async with aiohttp.ClientSession() as session:
-        session.headers.update(
-            {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36"
-            }
-        )
-        session.headers.update({"Accept": "*/*"})
-        session.headers.update({"Accept-Encoding": "gzip, deflate, br"})
-        session.headers.update({"Connection": "keep-alive"})
-        tasks = [fetch_url(session, url) for url in urls]
-        results = await asyncio.gather(*tasks)
+    price_selectors = [distributor.product_price_selector for distributor in distributors]
+    tasks = [
+        fetch_url(url, product_price_selector) for url, product_price_selector in zip(urls, price_selectors)
+    ]
+    results = await asyncio.gather(*tasks)
 
     return parse_results(distributors, results)

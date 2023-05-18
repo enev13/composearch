@@ -20,8 +20,8 @@
                         </a>
                     </td>
                     <td class="p-3">{{ result.price|floatformat:2 }} {{ result.currency }}</td>
-                    <td class="p-3"><img src="{{ result.shop_icon }}" alt="{{result.shop}}" height="16" width="16" /> {{
-                        result.shop }}</td>
+                    <td class="p-3"><img src="{{ result.shop_icon }}" alt="{{result.shop}}" height="16" width="16" />
+                        {{ result.shop }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
