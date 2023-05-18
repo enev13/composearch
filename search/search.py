@@ -20,6 +20,7 @@ class Product:
     vat: bool
     url: str
     shop: str
+    shop_icon: str
     picture_url: str
 
 
@@ -35,13 +36,69 @@ def to_float(text):
 
 
 async def fetch_url(session, url):
-    async with session.get(url) as response:
-        return await response.text()
+    try:
+        async with session.get(url) as response:
+            ret = await response.text()
+            print("Fetched url: ", url)
+            return ret
+    except Exception as ex:
+        print("Error fetching url: ", url)
+        print(ex)
 
 
 @sync_to_async
 def get_distributors():
     return list(DistributorSourceModel.objects.all())
+
+
+def parse_results(distributors, results):
+    products = []
+    for result, distributor in zip(results, distributors):
+        if result:
+            soup = BeautifulSoup(result, "html.parser")
+            product_name = soup.select(distributor.product_name_selector)
+            if product_name:
+                try:
+                    name = product_name[0].text.strip()
+                    price = to_float(soup.select(distributor.product_price_selector)[0].text.strip())
+                    currency = distributor.currency
+                    vat = (distributor.including_vat,)
+                    url = (
+                        soup.select(distributor.product_url_selector)[0]
+                        .get("href")
+                        .replace(distributor.base_url, "")
+                    )
+                    url = url[1:] if url.startswith("/") else url
+                    url = urljoin(distributor.base_url, url)
+                    picture_url = soup.select(distributor.product_picture_url_selector)
+                    if picture_url:
+                        picture_url = (
+                            soup.select(distributor.product_picture_url_selector)[0]
+                            .get("src")
+                            .replace(distributor.base_url, "")
+                        )
+                        picture_url = picture_url[1:] if picture_url.startswith("/") else picture_url
+                        picture_url = urljoin(distributor.base_url, picture_url)
+                    else:
+                        picture_url = DEFAULT_PICTURE
+                    product = Product(
+                        name=name,
+                        price=price,
+                        currency=currency,
+                        vat=vat,
+                        url=url,
+                        picture_url=picture_url,
+                        shop=distributor.name,
+                        shop_icon=urljoin(distributor.base_url, "favicon.ico"),
+                    )
+                except IndexError as ex:
+                    print(distributor.name, ex)
+                    continue
+            else:
+                continue
+            products.append(product)
+            products.sort(key=lambda x: x.price)
+    return products
 
 
 async def perform_search(query):
@@ -62,47 +119,4 @@ async def perform_search(query):
         tasks = [fetch_url(session, url) for url in urls]
         results = await asyncio.gather(*tasks)
 
-    products = []
-    for result, distributor in zip(results, distributors):
-        soup = BeautifulSoup(result, "html.parser")
-        product_name = soup.select(distributor.product_name_selector)
-        if product_name:
-            try:
-                name = product_name[0].text.strip()
-                price = to_float(soup.select(distributor.product_price_selector)[0].text.strip())
-                currency = distributor.currency
-                vat = (distributor.including_vat,)
-                url = (
-                    soup.select(distributor.product_url_selector)[0]
-                    .get("href")
-                    .replace(distributor.base_url, "")
-                )
-                url = url[1:] if url.startswith("/") else url
-                url = urljoin(distributor.base_url, url)
-                picture_url = soup.select(distributor.product_picture_url_selector)
-                if picture_url:
-                    picture_url = (
-                        soup.select(distributor.product_picture_url_selector)[0]
-                        .get("src")
-                        .replace(distributor.base_url, "")
-                    )
-                    picture_url = picture_url[1:] if picture_url.startswith("/") else picture_url
-                    picture_url = urljoin(distributor.base_url, picture_url)
-                else:
-                    picture_url = DEFAULT_PICTURE
-                product = Product(
-                    name=name,
-                    price=price,
-                    currency=currency,
-                    vat=vat,
-                    url=url,
-                    picture_url=picture_url,
-                    shop=distributor.name,
-                )
-            except IndexError as ex:
-                print(ex)
-                continue
-        else:
-            continue
-        products.append(product)
-    return products
+    return parse_results(distributors, results)
