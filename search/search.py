@@ -27,11 +27,11 @@ class Product:
 
 
 def to_float(text) -> float:
-    pattern = r"\b[-+]?\d{1,3}(?:([.,])\d{3})*([.,]\d+)?\b"
+    pattern = r"[-+]?\d{1,3}(?:([.,\s])\d{3})*([.,]\d+)?"
     match = re.search(pattern, text)
     if match:
-        if match.group(1) == ",":
-            return float(match.group().replace(".", "").replace(",", "."))
+        if match.group(1):
+            return float(match.group().replace(match.group(1), "", 1).replace(",", "."))
         return float(match.group().replace(",", "."))
     else:
         return None
