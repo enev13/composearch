@@ -26,7 +26,7 @@ class Product:
     picture_url: str
 
 
-def to_float(text) -> float:
+def to_float(text: str) -> float:
     pattern = r"[-+]?\d{1,3}(?:([.,\s])\d{3})*([.,]\d+)?"
     match = re.search(pattern, text)
     if match:
@@ -37,7 +37,7 @@ def to_float(text) -> float:
         return None
 
 
-async def fetch_url(url, price_selector) -> str | None:
+async def fetch_url(url: str, price_selector: str) -> str | None:
     try:
         async with async_playwright() as playwright:
             browser = await playwright.firefox.launch()
@@ -59,7 +59,7 @@ def get_distributors() -> list[DistributorSourceModel]:
     return list(DistributorSourceModel.objects.all())
 
 
-def parse_results(distributors, results) -> list[Product | None]:
+def parse_results(distributors: list[DistributorSourceModel], results: list[str]) -> list[Product | None]:
     products = []
     for result, distributor in zip(results, distributors):
         if result:
@@ -100,7 +100,7 @@ def parse_results(distributors, results) -> list[Product | None]:
                         shop_icon=urljoin(distributor.base_url, "favicon.ico"),
                     )
                 except IndexError as ex:
-                    log.error(distributor.name, ex)
+                    log.error(f"{distributor.name}: {ex}")
                     continue
             else:
                 log.error(f"Product name not found for {distributor.name}")
@@ -110,7 +110,7 @@ def parse_results(distributors, results) -> list[Product | None]:
     return products
 
 
-async def perform_search(query) -> list[Product | None]:
+async def perform_search(query: str) -> list[Product | None]:
     distributors = await get_distributors()
     distributors = [distributor for distributor in distributors if distributor.active]
     urls = [
