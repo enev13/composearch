@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "composearch"
 version = "0.1.0"
-description = ""
+description = "Composearch is meta search engine for electronic components and industrial products"
 authors = ["Petar Enev <enev@engineer.bg>"]
 readme = "README.md"
 

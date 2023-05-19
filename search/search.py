@@ -1,15 +1,17 @@
 import asyncio
+import logging
 import re
 from dataclasses import dataclass
-from urllib.parse import urljoin
+from urllib.parse import quote_plus, urljoin
 
-from playwright.async_api import async_playwright
 from asgiref.sync import sync_to_async
 from bs4 import BeautifulSoup
+from playwright.async_api import async_playwright
 
 from search.models import DistributorSourceModel
 
 DEFAULT_PICTURE = "/static/images/device.png"
+log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -24,7 +26,7 @@ class Product:
     picture_url: str
 
 
-def to_float(text):
+def to_float(text) -> float:
     pattern = r"\b[-+]?\d{1,3}(?:([.,])\d{3})*([.,]\d+)?\b"
     match = re.search(pattern, text)
     if match:
@@ -35,7 +37,7 @@ def to_float(text):
         return None
 
 
-async def fetch_url(url, price_selector):
+async def fetch_url(url, price_selector) -> str | None:
     try:
         async with async_playwright() as playwright:
             browser = await playwright.firefox.launch()
@@ -45,19 +47,19 @@ async def fetch_url(url, price_selector):
             await price_loaded.wait_for()
             html_content = await page.content()
             await browser.close()
-            print(f"Fetched url: {url}, length: {len(html_content)}")
+            log.info(f"Fetched url: {url}, length: {len(html_content)}")
             return html_content
     except Exception as ex:
-        print(f"Error fetching url: {url}")
-        print(ex)
+        log.error(f"Error fetching url: {url}")
+        log.error(ex)
 
 
 @sync_to_async
-def get_distributors():
+def get_distributors() -> list[DistributorSourceModel]:
     return list(DistributorSourceModel.objects.all())
 
 
-def parse_results(distributors, results):
+def parse_results(distributors, results) -> list[Product | None]:
     products = []
     for result, distributor in zip(results, distributors):
         if result:
@@ -98,21 +100,22 @@ def parse_results(distributors, results):
                         shop_icon=urljoin(distributor.base_url, "favicon.ico"),
                     )
                 except IndexError as ex:
-                    print(distributor.name, ex)
+                    log.error(distributor.name, ex)
                     continue
             else:
-                print(f"Product name not found for {distributor.name}")
+                log.error(f"Product name not found for {distributor.name}")
                 continue
             products.append(product)
             products.sort(key=lambda x: x.price)
     return products
 
 
-async def perform_search(query):
+async def perform_search(query) -> list[Product | None]:
     distributors = await get_distributors()
     distributors = [distributor for distributor in distributors if distributor.active]
     urls = [
-        distributor.base_url + distributor.search_string.replace("%s", query) for distributor in distributors
+        urljoin(distributor.base_url, distributor.search_string.replace("%s", quote_plus(query)))
+        for distributor in distributors
     ]
     price_selectors = [distributor.product_price_selector for distributor in distributors]
     tasks = [

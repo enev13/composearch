@@ -79,10 +79,10 @@ DATABASES = {
     "default": {
         "ENGINE": "djongo",
         "NAME": "composearch",
-                "ENFORCE_SCHEMA": False,
-                "CLIENT": {
-                    "host": config("MONGO_HOST"),
-                }
+        "ENFORCE_SCHEMA": False,
+        "CLIENT": {
+            "host": config("MONGO_HOST"),
+        },
     },
     # "default": {
     #     "ENGINE": "django.db.backends.sqlite3",
@@ -140,3 +140,35 @@ STATICFILES_FINDERS = [
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {process:d} {thread:d} - {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{asctime} - {levelname} - {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+        "file": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "formatter": "simple",
+            "filename": "info.log",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+}
