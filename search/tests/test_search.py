@@ -105,7 +105,7 @@ class TestSearch(TestCase):
         self.assertEqual(products[0].picture_url, "https://test.com/test-product.jpg")
         self.assertAlmostEqual(products[0].price, 9.08, places=2)
         self.assertEqual(products[0].currency, "EUR")
-        self.assertEqual(products[0].vat, (10,))
+        self.assertEqual(products[0].vat, 10)
         self.assertEqual(products[0].shop, "TestShop")
         self.assertEqual(products[0].shop_icon, "https://test.com/favicon.ico")
 
@@ -116,7 +116,7 @@ class TestSearch(TestCase):
         self.assertEqual(products[0].picture_url, "https://test.com/test-product.jpg")
         self.assertAlmostEqual(products[0].price, 9.99, places=2)
         self.assertEqual(products[0].currency, "EUR")
-        self.assertEqual(products[0].vat, (0,))
+        self.assertEqual(products[0].vat, 0)
         self.assertEqual(products[0].shop, "TestShop")
         self.assertEqual(products[0].shop_icon, "https://test.com/favicon.ico")
 
@@ -157,8 +157,8 @@ class TestSearch(TestCase):
     #     self.assertEqual(products[0].name, "Test product")
     #     self.assertEqual(products[0].url, "https://test.com/test-product")
     #     self.assertEqual(products[0].picture_url, "https://test.com/test-product.jpg")
-    #     self.assertEqual(products[0].price, 9.99)
+    #     self.assertEqual(products[0].price, 9.08)
     #     self.assertEqual(products[0].currency, "EUR")
-    #     self.assertEqual(products[0].vat, (True,))
+    #     self.assertEqual(products[0].vat, 10)
     #     self.assertEqual(products[0].shop, "TestShop")
     #     self.assertEqual(products[0].shop_icon, "https://test.com/favicon.ico")
