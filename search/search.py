@@ -16,6 +16,8 @@ log = logging.getLogger(__name__)
 
 @dataclass
 class Product:
+    """Dataclass for storing product information."""
+
     name: str
     price: str
     currency: str
@@ -27,6 +29,10 @@ class Product:
 
 
 def to_float(text: str) -> float:
+    """
+    Takes a string and returns the first float found in the string.
+    If no float is found, returns None.
+    """
     pattern = r"[-+]?\d{1,3}(?:([.,\s])\d{3})*([.,]\d+)?"
     match = re.search(pattern, text)
     if match:
@@ -38,6 +44,12 @@ def to_float(text: str) -> float:
 
 
 async def fetch_url(url: str, price_selector: str) -> str | None:
+    """
+    Fetches the given url and waits for the price selector to appear.
+    If the price selector does not appear, returns None.
+    If an exception occurs, returns None.
+    Returns the page's html content as a string.
+    """
     try:
         async with async_playwright() as playwright:
             browser = await playwright.firefox.launch()
@@ -60,6 +72,11 @@ def get_distributors() -> list[DistributorSourceModel]:
 
 
 def parse_results(distributors: list[DistributorSourceModel], results: list[str]) -> list[Product | None]:
+    """
+    Takes a list of DistributorSourceModels and a list of html strings.
+    Parses the results from fetch_url and returns a list of Product objects, sorted by price.
+    If an error occurs or the product could not be parsed, returns None.
+    """
     products = []
     for result, distributor in zip(results, distributors):
         if result:
@@ -70,7 +87,8 @@ def parse_results(distributors: list[DistributorSourceModel], results: list[str]
                     name = product_name[0].text.strip()
                     price = to_float(soup.select(distributor.product_price_selector)[0].text.strip())
                     currency = distributor.currency
-                    vat = (distributor.including_vat,)
+                    vat = distributor.included_vat
+                    price /= 1 + vat / 100
                     url = (
                         soup.select(distributor.product_url_selector)[0]
                         .get("href")
@@ -111,6 +129,11 @@ def parse_results(distributors: list[DistributorSourceModel], results: list[str]
 
 
 async def perform_search(query: str) -> list[Product | None]:
+    """
+    Takes a search query, fetches the urls of all active distributors and performs the search.
+    Returns a list of Product objects.
+    If an error occurs, returns an empty list.
+    """
     distributors = await get_distributors()
     distributors = [distributor for distributor in distributors if distributor.active]
     urls = [

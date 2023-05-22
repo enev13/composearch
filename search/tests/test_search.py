@@ -11,7 +11,19 @@ class TestSearch(TestCase):
             base_url="https://test.com/",
             search_string="search?q=%s",
             currency="EUR",
-            including_vat=True,
+            included_vat=10,
+            product_name_selector="#name",
+            product_url_selector="a",
+            product_picture_url_selector="img",
+            product_price_selector="div > span",
+            active=True,
+        )
+        self.distributor_0_vat = DistributorSourceModel.objects.create(
+            name="TestShop",
+            base_url="https://test.com/",
+            search_string="search?q=%s",
+            currency="EUR",
+            included_vat=0,
             product_name_selector="#name",
             product_url_selector="a",
             product_picture_url_selector="img",
@@ -72,7 +84,7 @@ class TestSearch(TestCase):
         """
 
     async def test_get_distributors(self):
-        self.assertEqual(await get_distributors(), [self.distributor])
+        self.assertEqual(await get_distributors(), [self.distributor, self.distributor_0_vat])
 
     def test_to_float(self):
         self.assertEqual(to_float("1.23"), 1.23)
@@ -91,9 +103,20 @@ class TestSearch(TestCase):
         self.assertEqual(products[0].name, "Test product")
         self.assertEqual(products[0].url, "https://test.com/test-product")
         self.assertEqual(products[0].picture_url, "https://test.com/test-product.jpg")
-        self.assertEqual(products[0].price, 9.99)
+        self.assertAlmostEqual(products[0].price, 9.08, places=2)
         self.assertEqual(products[0].currency, "EUR")
-        self.assertEqual(products[0].vat, (True,))
+        self.assertEqual(products[0].vat, (10,))
+        self.assertEqual(products[0].shop, "TestShop")
+        self.assertEqual(products[0].shop_icon, "https://test.com/favicon.ico")
+
+    def test_parse_results_0_vat(self):
+        products = parse_results([self.distributor_0_vat], [self.html])
+        self.assertEqual(products[0].name, "Test product")
+        self.assertEqual(products[0].url, "https://test.com/test-product")
+        self.assertEqual(products[0].picture_url, "https://test.com/test-product.jpg")
+        self.assertAlmostEqual(products[0].price, 9.99, places=2)
+        self.assertEqual(products[0].currency, "EUR")
+        self.assertEqual(products[0].vat, (0,))
         self.assertEqual(products[0].shop, "TestShop")
         self.assertEqual(products[0].shop_icon, "https://test.com/favicon.ico")
 
