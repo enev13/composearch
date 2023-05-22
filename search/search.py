@@ -114,7 +114,7 @@ def parse_results(distributors: list[DistributorSourceModel], results: list[str]
                         shop=distributor.name,
                         shop_icon=urljoin(distributor.base_url, "favicon.ico"),
                     )
-                except IndexError as ex:
+                except Exception as ex:
                     log.error(f"{distributor.name}: {ex}")
                     continue
             else:
