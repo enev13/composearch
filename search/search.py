@@ -6,7 +6,7 @@ from urllib.parse import quote_plus, urljoin
 
 from asgiref.sync import sync_to_async
 from bs4 import BeautifulSoup
-from playwright.async_api import async_playwright
+from playwright.async_api import async_playwright, Browser
 
 from search.models import DistributorSourceModel
 
@@ -43,24 +43,21 @@ def to_float(text: str) -> float:
         return None
 
 
-async def fetch_url(url: str, price_selector: str) -> str | None:
+async def fetch_url(browser: Browser, url: str, price_selector: str) -> str | None:
     """
     Fetches the given url and waits for the price selector to appear.
     If the price selector does not appear, returns None.
     If an exception occurs, returns None.
     Returns the page's html content as a string.
     """
+    page = await browser.new_page()
     try:
-        async with async_playwright() as playwright:
-            browser = await playwright.firefox.launch()
-            page = await browser.new_page()
-            await page.goto(url)
-            price_loaded = page.locator(price_selector)
-            await price_loaded.wait_for()
-            html_content = await page.content()
-            await browser.close()
-            log.info(f"Fetched url: {url}, length: {len(html_content)}")
-            return html_content
+        await page.goto(url)
+        price_loaded = page.locator(price_selector)
+        await price_loaded.wait_for(timeout=5000)
+        html_content = await page.content()
+        log.info(f"Fetched url: {url}, length: {len(html_content)}")
+        return html_content
     except Exception as ex:
         log.error(f"Error fetching url: {url}")
         log.error(ex)
@@ -141,9 +138,14 @@ async def perform_search(query: str) -> list[Product | None]:
         for distributor in distributors
     ]
     price_selectors = [distributor.product_price_selector for distributor in distributors]
-    tasks = [
-        fetch_url(url, product_price_selector) for url, product_price_selector in zip(urls, price_selectors)
-    ]
-    results = await asyncio.gather(*tasks)
+    async with async_playwright() as playwright:
+        browser = await playwright.firefox.launch()
+        tasks = [
+            fetch_url(browser, url, product_price_selector)
+            for url, product_price_selector in zip(urls, price_selectors)
+        ]
+
+        results = await asyncio.gather(*tasks)
+        await browser.close()
 
     return parse_results(distributors, results)
