@@ -28,7 +28,7 @@ class Product:
     picture_url: str
 
 
-def to_float(text: str) -> float:
+def to_float(text: str) -> float | None:
     """
     Takes a string and returns the first float found in the string.
     If no float is found, returns None.
