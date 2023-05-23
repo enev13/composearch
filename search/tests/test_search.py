@@ -1,7 +1,9 @@
+from unittest.mock import patch
 from django.test import TestCase
 
 from search.models import DistributorSourceModel
 from search.search import DEFAULT_PICTURE, get_distributors, perform_search, to_float, parse_results
+from playwright.async_api import Browser
 
 
 class TestSearch(TestCase):
@@ -30,6 +32,19 @@ class TestSearch(TestCase):
             product_price_selector="div > span",
             active=True,
         )
+        self.distributor_inactive = DistributorSourceModel.objects.create(
+            name="TestShop",
+            base_url="https://test.com/",
+            search_string="search?q=%s",
+            currency="EUR",
+            included_vat=0,
+            product_name_selector="#name",
+            product_url_selector="a",
+            product_picture_url_selector="img",
+            product_price_selector="div > span",
+            active=False,
+        )
+
         self.html = """
         <html>
             <body>
@@ -152,13 +167,26 @@ class TestSearch(TestCase):
         products = parse_results([], [])
         self.assertEqual(products, [])
 
-    # async def test_perform_search(self):
-    #     products = await perform_search("test")
-    #     self.assertEqual(products[0].name, "Test product")
-    #     self.assertEqual(products[0].url, "https://test.com/test-product")
-    #     self.assertEqual(products[0].picture_url, "https://test.com/test-product.jpg")
-    #     self.assertEqual(products[0].price, 9.08)
-    #     self.assertEqual(products[0].currency, "EUR")
-    #     self.assertEqual(products[0].vat, 10)
-    #     self.assertEqual(products[0].shop, "TestShop")
-    #     self.assertEqual(products[0].shop_icon, "https://test.com/favicon.ico")
+    async def mock_fetch_url(browser: Browser, url: str, price_selector: str) -> str:
+        return """
+        <html>
+            <body>
+                <div id="name">Test product</div>
+                <a href="https://test.com/test-product">Test product</a>
+                <img src="https://test.com/test-product.jpg">
+                <div><span class="price">9.99</span></div>
+            </body>
+        </html>
+        """
+
+    @patch("search.search.fetch_url", side_effect=mock_fetch_url)
+    async def test_perform_search(self, mock_fetch_url):
+        products = await perform_search("test")
+        self.assertEqual(products[0].name, "Test product")
+        self.assertEqual(products[0].url, "https://test.com/test-product")
+        self.assertEqual(products[0].picture_url, "https://test.com/test-product.jpg")
+        self.assertAlmostEqual(products[0].price, 9.08, places=2)
+        self.assertEqual(products[0].currency, "EUR")
+        self.assertEqual(products[0].vat, 10)
+        self.assertEqual(products[0].shop, "TestShop")
+        self.assertEqual(products[0].shop_icon, "https://test.com/favicon.ico")
