@@ -1,9 +1,11 @@
+from decimal import Decimal
 from unittest.mock import patch
+
 from django.test import TestCase
+from playwright.async_api import Browser
 
 from search.models import DistributorSourceModel
-from search.search import DEFAULT_PICTURE, get_distributors, perform_search, to_float, parse_results
-from playwright.async_api import Browser
+from search.search import DEFAULT_PICTURE, get_active_distributors, parse_results, perform_search, to_decimal
 
 
 class TestSearch(TestCase):
@@ -99,26 +101,26 @@ class TestSearch(TestCase):
         """
 
     async def test_get_distributors(self):
-        self.assertEqual(await get_distributors(), [self.distributor, self.distributor_0_vat])
+        self.assertEqual(await get_active_distributors(), [self.distributor, self.distributor_0_vat])
 
     def test_to_float(self):
-        self.assertEqual(to_float("1.23"), 1.23)
-        self.assertEqual(to_float("1,23"), 1.23)
-        self.assertEqual(to_float(" -1.23"), -1.23)
-        self.assertEqual(to_float("1 234.56"), 1234.56)
-        self.assertEqual(to_float("1,234.56"), 1234.56)
-        self.assertEqual(to_float("1"), 1.0)
-        self.assertEqual(to_float("1.23abc"), 1.23)
-        self.assertEqual(to_float("Price: 1.23 EUR"), 1.23)
-        self.assertEqual(to_float("1.234.56"), 1234.56)
-        self.assertEqual(to_float("not a float"), None)
+        self.assertEqual(to_decimal("1.23"), Decimal("1.23"))
+        self.assertEqual(to_decimal("1,23"), Decimal("1.23"))
+        self.assertEqual(to_decimal(" -1.23"), Decimal("-1.23"))
+        self.assertEqual(to_decimal("1 234.56"), Decimal("1234.56"))
+        self.assertEqual(to_decimal("1,234.56"), Decimal("1234.56"))
+        self.assertEqual(to_decimal("1"), Decimal("1.0"))
+        self.assertEqual(to_decimal("1.23abc"), Decimal("1.23"))
+        self.assertEqual(to_decimal("Price: 1.23 EUR"), Decimal("1.23"))
+        self.assertEqual(to_decimal("1.234.56"), Decimal("1234.56"))
+        self.assertEqual(to_decimal("not a float"), None)
 
     def test_parse_results_normal_html(self):
         products = parse_results([self.distributor], [self.html])
         self.assertEqual(products[0].name, "Test product")
         self.assertEqual(products[0].url, "https://test.com/test-product")
         self.assertEqual(products[0].picture_url, "https://test.com/test-product.jpg")
-        self.assertAlmostEqual(products[0].price, 9.08, places=2)
+        self.assertEqual(products[0].price, Decimal("9.08"))
         self.assertEqual(products[0].currency, "EUR")
         self.assertEqual(products[0].vat, 10)
         self.assertEqual(products[0].shop, "TestShop")
@@ -129,7 +131,7 @@ class TestSearch(TestCase):
         self.assertEqual(products[0].name, "Test product")
         self.assertEqual(products[0].url, "https://test.com/test-product")
         self.assertEqual(products[0].picture_url, "https://test.com/test-product.jpg")
-        self.assertAlmostEqual(products[0].price, 9.99, places=2)
+        self.assertEqual(products[0].price, Decimal("9.99"))
         self.assertEqual(products[0].currency, "EUR")
         self.assertEqual(products[0].vat, 0)
         self.assertEqual(products[0].shop, "TestShop")
@@ -185,7 +187,7 @@ class TestSearch(TestCase):
         self.assertEqual(products[0].name, "Test product")
         self.assertEqual(products[0].url, "https://test.com/test-product")
         self.assertEqual(products[0].picture_url, "https://test.com/test-product.jpg")
-        self.assertAlmostEqual(products[0].price, 9.08, places=2)
+        self.assertEqual(products[0].price, Decimal("9.08"))
         self.assertEqual(products[0].currency, "EUR")
         self.assertEqual(products[0].vat, 10)
         self.assertEqual(products[0].shop, "TestShop")
