@@ -4,13 +4,14 @@ Composearch is a price comparison web app that combines the functionalities of a
 
 <img src="/composearch.png" width=75% alt="Composearch Preview"/>
 
-# Technologies used
+# Technologies Used
 
 - **Python**: Powers the backend functionality of Composearch.
 - **Django**: Provides a robust framework for building the web application.
-- **MongoDB**: Stores and manages distributor data, integrated via Djongo/PyMongo.
+- **PostreSQL**: Stores and manages distributor data, integrated via psycopg3.
 - **Playwright**: Enables efficient web scraping and data extraction from online stores.
 - **BeautifulSoup**: Facilitates HTML parsing and data extraction from web pages.
+- **Redis**: Implements caching functionality for improved performance.
 - **TailwindCSS**: Enhances the visual aesthetics and responsiveness of the application.
 - **Poetry**: Manages the project's dependencies and package management.
 
@@ -18,7 +19,6 @@ Composearch is a price comparison web app that combines the functionalities of a
 
 - Python 3.11
 - Poetry
-- MongoDB Atlas account with a cluster
 
 # Quick Start
 
@@ -28,22 +28,14 @@ Composearch is a price comparison web app that combines the functionalities of a
 git checkout https://github.com/enev13/composearch.git
 ```
 
-2. Create .env file in the project folder...
+2. Rename .env.sample file in the project folder to .env and edit the environemnt variables if necessary.
 
 ```
-touch .env
+mv .env.sample .env
+nano .env
 ```
 
-... and fill it with following environemnt variables:
-
-```
-# Django debug mode
-DEBUG=True
-# Django secret key string
-SECRET_KEY=not_so_secret_key_qwerty1234
-# MongoDB Atlas connection string
-MONGO_HOST=mongodb+srv://<username>:<password>@<atlas cluster>/<myFirstDatabase>?retryWrites=true&w=majority
-```
+... 
 
 3. Install the project dependencies
 
