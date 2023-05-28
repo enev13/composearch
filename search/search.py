@@ -5,9 +5,10 @@ from urllib.parse import quote_plus, urljoin
 
 from asgiref.sync import sync_to_async
 from bs4 import BeautifulSoup
+from django.core.cache import cache
 from playwright.async_api import Browser, async_playwright
-from search.helpers import to_decimal
 
+from search.helpers import to_decimal
 from search.models import DistributorSourceModel
 from search.product import Product
 
@@ -62,6 +63,10 @@ async def fetch_url(browser: Browser, url: str, price_selector: str) -> str | No
     If an exception occurs, returns None.
     Returns the page's html content as a string.
     """
+    cached_result = cache.get(url)
+    if cached_result:
+        return cached_result
+
     page = await browser.new_page()
     try:
         await page.goto(url)
@@ -69,6 +74,7 @@ async def fetch_url(browser: Browser, url: str, price_selector: str) -> str | No
         await price_loaded.wait_for(timeout=5000)
         html_content = await page.content()
         log.debug(f"Fetched url: {url}, length: {len(html_content)}")
+        cache.set(url, html_content)
         return html_content
     except Exception as ex:
         log.debug(f"Error fetching url: {url}")
