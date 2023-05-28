@@ -8,7 +8,7 @@ Composearch is a price comparison web app that combines the functionalities of a
 
 - **Python**: Powers the backend functionality of Composearch.
 - **Django**: Provides a robust framework for building the web application.
-- **PostreSQL**: Stores and manages distributor data, integrated via psycopg3.
+- **PostgreSQL**: Stores and manages distributor data, integrated via psycopg3.
 - **Playwright**: Enables efficient web scraping and data extraction from online stores.
 - **BeautifulSoup**: Facilitates HTML parsing and data extraction from web pages.
 - **Redis**: Implements caching functionality for improved performance.
