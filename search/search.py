@@ -13,6 +13,7 @@ from search.models import DistributorSourceModel
 from search.product import Product
 
 DEFAULT_PICTURE = "/static/images/device.png"
+CACHE_TIMEOUT = 60 * 60  # 1 hour
 log = logging.getLogger(__name__)
 
 
@@ -74,7 +75,7 @@ async def fetch_url(browser: Browser, url: str, price_selector: str) -> str | No
         await price_loaded.wait_for(timeout=5000)
         html_content = await page.content()
         log.debug(f"Fetched url: {url}, length: {len(html_content)}")
-        cache.set(url, html_content)
+        cache.set(url, html_content, CACHE_TIMEOUT)
         return html_content
     except Exception as ex:
         log.debug(f"Error fetching url: {url}")
@@ -91,21 +92,24 @@ def parse_results(distributors: list[DistributorSourceModel], results: list[str]
     for result, distributor in zip(results, distributors):
         if result:
             soup = BeautifulSoup(result, "html.parser")
-            product_name = select_name(distributor, soup)
+            product_name = select_element("name", distributor, soup)
             if product_name:
                 try:
                     currency = distributor.currency
                     vat = distributor.included_vat
 
-                    price = select_price(distributor, soup)
+                    price = select_element("price", distributor, soup)
+                    price = to_decimal(price)
                     price /= 1 + Decimal(vat / 100)
 
-                    url = select_url(distributor, soup)
+                    url = select_element("url", distributor, soup)
+                    url = url.replace(distributor.base_url, "")
                     url = url[1:] if url.startswith("/") else url
                     url = urljoin(distributor.base_url, url)
 
-                    picture_url = select_picture_url(distributor, soup)
+                    picture_url = select_element("picture_url", distributor, soup)
                     if picture_url:
+                        picture_url = picture_url.replace(distributor.base_url, "")
                         picture_url = picture_url[1:] if picture_url.startswith("/") else picture_url
                         picture_url = urljoin(distributor.base_url, picture_url)
                     else:
@@ -130,33 +134,14 @@ def parse_results(distributors: list[DistributorSourceModel], results: list[str]
     return products
 
 
-def select_picture_url(distributor, soup) -> str | None:
+def select_element(element, distributor, soup) -> str | None:
     try:
-        return (
-            soup.select(distributor.product_picture_url_selector)[0]
-            .get("src")
-            .replace(distributor.base_url, "")
-        )
-    except IndexError:
-        return None
-
-
-def select_url(distributor, soup) -> str | None:
-    try:
-        return soup.select(distributor.product_url_selector)[0].get("href").replace(distributor.base_url, "")
-    except IndexError:
-        return None
-
-
-def select_price(distributor, soup) -> Decimal | None:
-    try:
-        return to_decimal(soup.select(distributor.product_price_selector)[0].text.strip())
-    except IndexError:
-        return None
-
-
-def select_name(distributor, soup) -> str | None:
-    try:
-        return soup.select(distributor.product_name_selector)[0].text.strip()
+        selector = {
+            "name": soup.select(distributor.product_name_selector)[0].text.strip(),
+            "price": soup.select(distributor.product_price_selector)[0].text.strip(),
+            "url": soup.select(distributor.product_url_selector)[0].get("href"),
+            "picture_url": soup.select(distributor.product_picture_url_selector)[0].get("src"),
+        }
+        return selector.get(element, None)
     except IndexError:
         return None
