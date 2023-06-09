@@ -1,0 +1,197 @@
+[
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "OEG",
+      "base_url": "https://www.oeg.net/",
+      "search_string": "search?query=%s",
+      "currency": "EUR",
+      "product_name_selector": "#main > div.container > div:nth-child(2) > div.col-xs-12.col-md-8.col-md-push-4.col-lg-9.col-lg-push-3.col-xl-10.col-xl-push-2 > div.row.article--listing > div:nth-child(1) > div > div.teaser__clearfix > div.teaser__content > a > p",
+      "product_url_selector": "#main > div.container > div:nth-child(2) > div.col-xs-12.col-md-8.col-md-push-4.col-lg-9.col-lg-push-3.col-xl-10.col-xl-push-2 > div.row.article--listing > div:nth-child(1) > div > div.teaser__clearfix > div.teaser__content > a",
+      "product_picture_url_selector": "#main > div.container > div:nth-child(2) > div.col-xs-12.col-md-8.col-md-push-4.col-lg-9.col-lg-push-3.col-xl-10.col-xl-push-2 > div.row.article--listing > div:nth-child(1) > div > div.teaser__clearfix > div.teaser__img > a > img",
+      "product_price_selector": "#main > div.container > div:nth-child(2) > div.col-xs-12.col-md-8.col-md-push-4.col-lg-9.col-lg-push-3.col-xl-10.col-xl-push-2 > div.row.article--listing > div:nth-child(1) > div > div.teaser__price-box > div > div.col-xs-7.col-price > span",
+      "active": true,
+      "included_vat": 19
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "Electrotools",
+      "base_url": "https://en.elektrotools.de/",
+      "search_string": "advanced_search_result.php?keywords=%s",
+      "currency": "EUR",
+      "product_name_selector": "#product_listing > table > tbody > tr > td:nth-child(2) > h2 > a",
+      "product_url_selector": "#product_listing > table > tbody > tr > td:nth-child(2) > h2 > a",
+      "product_picture_url_selector": "#product_listing > table > tbody > tr > td.product_image > a > img",
+      "product_price_selector": "#product_listing > table > tbody > tr > td.product_price > div.listing_price_single.price",
+      "active": true,
+      "included_vat": 19
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "ENS ElectroNetShop",
+      "base_url": "https://www.elektronetshop.de/",
+      "search_string": "search/result?term=%s&row=0&order_by=Relevance&order_direction=DESC",
+      "currency": "EUR",
+      "product_name_selector": "#product-list > div > div:nth-child(2) > div > div.row.row-8 > div:nth-child(1) > div > div.active.visible-lg > div.description > p > a",
+      "product_url_selector": "#product-list > div > div:nth-child(2) > div > div.row.row-8 > div:nth-child(1) > div > div.description > p.title > a[href]",
+      "product_picture_url_selector": "#product-list > div > div:nth-child(2) > div > div.row.row-8 > div.col-lg-2.col-md-2.col-sm-2.col-sm-12 > div > div.imagewrapper > a > img",
+      "product_price_selector": "#product-list > div > div:nth-child(2) > div > div.row.row-8 > div:nth-child(1) > div > div:nth-child(4) > div > span",
+      "active": true,
+      "included_vat": 19
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "Best4Automation",
+      "base_url": "https://www.best4automation.com/",
+      "search_string": "search?sSearch=%s",
+      "currency": "EUR",
+      "product_name_selector": "body > div.page-wrap > section > div > div.content--wrapper > div > div.search--results > div > div.listing--container > div.listing > div:nth-child(1) > div > div.product--info > a.product--title",
+      "product_url_selector": "body > div.page-wrap > section > div > div.content--wrapper > div > div.search--results > div > div.listing--container > div.listing > div:nth-child(1) > div > div.product--info > a.product--title",
+      "product_picture_url_selector": "body > div.page-wrap > section > div > div.content--wrapper > div > div.search--results > div > div.listing--container > div.listing > div:nth-child(1) > div > div.product--info > a.product--image > span > span > noscript > img",
+      "product_price_selector": "body > div.page-wrap > section > div > div.content--wrapper > div > div.search--results > div > div.listing--container > div.listing > div:nth-child(1) > div > div.product--info > div.product--price-info > div.product--price > span",
+      "active": true,
+      "included_vat": 0
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "Omnical",
+      "base_url": "https://www.omnical.co/",
+      "search_string": "search?f_classcode=&f_brand=&page=1&q=%s",
+      "currency": "EUR",
+      "product_name_selector": "#product-row-0 > div.tradeproduct-title > a",
+      "product_url_selector": "#product-row-0 > div.tradeproduct-title > a",
+      "product_picture_url_selector": "#product-row-0 > div.tradeproduct-image > img",
+      "product_price_selector": "#product-row-0 > div.tradeproduct-info > div.tradeproduct-description.click > div.tradeproduct-price-search > strong > span:nth-child(2)",
+      "active": true,
+      "included_vat": 0
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "Automation24",
+      "base_url": "https://www.automation24.biz/",
+      "search_string": "article?s=%s&sort=6",
+      "currency": "EUR",
+      "product_name_selector": "#article-2054 > div > div > div.col-xs-12.col-xs-9-landscape.col-sm-9 > div > div:nth-child(1) > div > div.col-xs-12.col-sm-8 > div.title > a",
+      "product_url_selector": "#article-2054 > div > div > div.col-xs-12.col-xs-9-landscape.col-sm-9 > div > div:nth-child(1) > div > div.col-xs-12.col-sm-8 > div.title > a",
+      "product_picture_url_selector": "#article-2054 > div > div > div.col-xs-12.col-xs-9-landscape.col-sm-9 > div > div:nth-child(1) > div > div.col-xs-12.col-sm-4 > a > img",
+      "product_price_selector": "#article-2054 > div > div > div.col-xs-12.col-sm-3 > div > div.price > span",
+      "active": true,
+      "included_vat": 0
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "Lieske Industry-Electronics",
+      "base_url": "https://industry-electronics.com/",
+      "search_string": "suche.html?artsuche=%s&suchen=&suchauswahl=volltext",
+      "currency": "EUR",
+      "product_name_selector": "body > div.cntmain0 > div > div > main > div.product > h1",
+      "product_url_selector": "#top-bar > div > div > a.active",
+      "product_picture_url_selector": "body > div.cntmain0 > div > div > main > div.product > div.row > div.images > img:nth-child(1)",
+      "product_price_selector": "body > div.cntmain0 > div > div > main > div.product > div.row > div.pdata > table > tbody > tr.pricerow > td > div > span:nth-child(1)",
+      "active": true,
+      "included_vat": 0
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "Distrelec International",
+      "base_url": "https://www.distrelec.biz/",
+      "search_string": "search?q=%s&sid=",
+      "currency": "EUR",
+      "product_name_selector": "body > div.md-system > div > section.product-section > div > div > div > div.row > div.col-12.print-product-name > div.mod.mod-product-title > h1",
+      "product_url_selector": "head > link:nth-child(30)",
+      "product_picture_url_selector": "#zoom-item-v > figure > img",
+      "product_price_selector": "body > div.md-system > div > section.product-section > div > div > div > div.row > div:nth-child(7) > div:nth-child(1) > div > div > div.product-right-info__bottom > div.mod.mod-scaled-prices.skin-scaled-prices-single > div > div.prices-container > div:nth-child(2) > div > h2",
+      "active": true,
+      "included_vat": 0
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "RS Components - BG",
+      "base_url": "https://bg.rsdelivers.com/",
+      "search_string": "productlist/search?query=%s",
+      "currency": "EUR",
+      "product_name_selector": "#pageWrapper > div.page-content-wrapper > div > div > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > h1",
+      "product_url_selector": "head > link:nth-child(60)",
+      "product_picture_url_selector": "#pageWrapper > div.page-content-wrapper > div > div > div:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div > div > div > img",
+      "product_price_selector": "#pageWrapper > div.page-content-wrapper > div > div > div:nth-child(2) > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(1) > div > div > div > div > div > div > p",
+      "active": true,
+      "included_vat": 0
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "TME",
+      "base_url": "https://www.tme.eu/",
+      "search_string": "en/katalog/?queryPhrase=%s",
+      "currency": "EUR",
+      "product_name_selector": "#products > tbody > tr.c-product-row.js-ecommerce-event__product.js-ecommerce-event__product__27394.row0.js-product-row__27394 > td > div > div.c-product-row__cell.c-product-row__cell--description > span > a > h4",
+      "product_url_selector": "#products > tbody > tr.c-product-row.js-ecommerce-event__product.js-ecommerce-event__product__27394.row0.js-product-row__27394 > td > div > div.c-product-row__cell.c-product-row__cell--description > span > a",
+      "product_picture_url_selector": "#products > tbody > tr.c-product-row.js-ecommerce-event__product.js-ecommerce-event__product__27394.row0.js-product-row__27394 > td > div > div.c-product-row__cell.c-product-row__cell--photo > a > div > img",
+      "product_price_selector": "#products > tbody > tr.c-product-row.js-ecommerce-event__product.js-ecommerce-event__product__27394.row0.js-product-row__27394 > td > div > div.C_27394.js_gtm_ranges_27394.price-box.c-product-row__cell.c-product-row__cell--prices > div > div > div.c-price-table.c-price-table__cell-prices > div.js-ecommerce-event__prices-table > div.js-ecommerce-event__highest-price.c-price-table__cell.c-price-table__cell--odd > span",
+      "active": true,
+      "included_vat": 0
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "reichelt",
+      "base_url": "https://www.reichelt.de/",
+      "search_string": "index.html?ACTION=446&LA=0&nbc=1&q=%s",
+      "currency": "EUR",
+      "product_name_selector": "div.al_gallery_article_artinfo > div.al_artinfo_headline > a",
+      "product_url_selector": "div.al_gallery_article_artinfo > div.al_artinfo_headline > a",
+      "product_picture_url_selector": "div.al_gallery_article_logos > div.al_artlogo > a > img",
+      "product_price_selector": "div.al_gallery_article_artlinks > div.al_artlinks_price > div.dvpreis > p > span",
+      "active": true,
+      "included_vat": 19
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "Electrobode",
+      "base_url": "https://www.elektrobode.nl/",
+      "search_string": "search?query=%s",
+      "currency": "EUR",
+      "included_vat": 0,
+      "product_name_selector": "#productInfo > div.row.mb-5.mt-0 > div > h1",
+      "product_url_selector": "head > link:nth-child(49)",
+      "product_picture_url_selector": "#productCarousel > div.row > div > div > div > div.position-relative.pb-5 > img",
+      "product_price_selector": "#productInfo > div:nth-child(2) > div.col-12.col-md-4.col-lg-6 > div > div.col-12.col-sm-6.col-md-12.col-lg-6.product-actions > div.min-height-75 > span > strong.price-excl.price-focus",
+      "active": true
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "ETOH24",
+      "base_url": "https://www.etoh24.de/",
+      "search_string": "#q%3D%s",
+      "currency": "EUR",
+      "included_vat": 19,
+      "product_name_selector": "#exo-result-list > div:nth-child(1) > div.exo-desc > div.exo-prodName > a",
+      "product_url_selector": "#exo-result-list > div:nth-child(1) > div.exo-desc > div.exo-prodName > a",
+      "product_picture_url_selector": "#exo-result-list > div:nth-child(1) > div.exo-img > div > a > img",
+      "product_price_selector": "#exo-result-list > div:nth-child(1) > div.exo-desc > div.exo-prodPrice",
+      "active": false
+    }
+  }
+]
