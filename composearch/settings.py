@@ -84,6 +84,7 @@ if PRODUCTION:
             "HOST": config("DB_HOST"),
             "NAME": config("DB_NAME"),
             "USER": config("DB_USER"),
+            "PORT": config("DB_PORT"),
             "PASSWORD": config("DB_PASS"),
         },
     }
@@ -182,7 +183,7 @@ if PRODUCTION:
     CACHES = {
         "default": {
             "BACKEND": "django.core.cache.backends.redis.RedisCache",
-            "LOCATION": "redis://localhost:6379/0",  # Redis server location
+            "LOCATION": config("REDIS_URL"),  # Redis server location
             "OPTIONS": {
                 "CLIENT_CLASS": "django_redis.client.DefaultClient",
             },
