@@ -183,10 +183,7 @@ if PRODUCTION:
     CACHES = {
         "default": {
             "BACKEND": "django.core.cache.backends.redis.RedisCache",
-            "LOCATION": config("REDIS_URL"),  # Redis server location
-            "OPTIONS": {
-                "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            },
+            "LOCATION": config("REDIS_URL"),
         },
     }
 else:
