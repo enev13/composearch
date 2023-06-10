@@ -12,7 +12,7 @@ from search.models import DistributorSourceModel
 from search.product import Product
 from search.parser import Parser
 
-DEFAULT_PICTURE = "/static/images/device.png"
+DEFAULT_PICTURE = "{% static 'images/device.png' %}'"
 CACHE_TIMEOUT = 60 * 60  # 1 hour
 log = logging.getLogger(__name__)
 
