@@ -81,6 +81,8 @@ async def fetch_url(browser: Browser, url: str, price_selector: str) -> str | No
     except Exception as ex:
         log.debug(f"Error fetching url: {url}")
         log.debug(ex)
+    finally:
+        await page.close()
 
 
 async def parse_results(
