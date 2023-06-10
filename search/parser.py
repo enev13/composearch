@@ -33,7 +33,6 @@ class AbstractParser(ABC):
 class Parser(AbstractParser):
     def __init__(self, parser: str) -> None:
         self.parser_type = parser
-        self.parser = None
 
     async def identify_parser(self):
         for parser in AbstractParser.__subclasses__():
@@ -45,20 +44,18 @@ class Parser(AbstractParser):
         raise ValueError(f"Parser {self.parser_type} not found")
 
     async def __aenter__(self):
-        if not self.parser:
-            self.parser = await self.identify_parser()
-            await self.parser.__aenter__()
-        return self
+        self.parser = await self.identify_parser()
+        await self.parser.__aenter__()
+        return self.parser
 
     async def __aexit__(self, *args: Any):
         await self.parser.__aexit__(*args)
-        self.parser = None
 
     async def load_content(self, html_content: str) -> None:
-        return await self.parser.load_content(html_content)
+        ...
 
     async def select_element(self, selector: str, type: str, **kwargs) -> str | None:
-        return await self.parser.select_element(selector, type, **kwargs)
+        ...
 
 
 class BeautifulSoupParser(AbstractParser):
@@ -82,6 +79,8 @@ class BeautifulSoupParser(AbstractParser):
                 return await sync_to_async(element.get)("href")
             elif type == "src":
                 return await sync_to_async(element.get)("src")
+            else:
+                raise ValueError(f"Type {type} not supported")
 
 
 class PlaywrightParser(AbstractParser):
@@ -110,3 +109,5 @@ class PlaywrightParser(AbstractParser):
                 return await element.get_attribute("href")
             elif type == "src":
                 return await element.get_attribute("src")
+            else:
+                raise ValueError(f"Type {type} not supported")
