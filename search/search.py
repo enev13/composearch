@@ -6,7 +6,7 @@ from urllib.parse import quote_plus, urljoin
 from asgiref.sync import sync_to_async
 from decouple import config
 from django.core.cache import cache
-from playwright.async_api import Browser, async_playwright
+from playwright.async_api import BrowserContext, async_playwright
 
 from search.helpers import to_decimal
 from search.models import DistributorSourceModel
@@ -49,16 +49,18 @@ def get_active_distributors() -> list[DistributorSourceModel]:
 async def fetch_results(urls, price_selectors):
     async with async_playwright() as playwright:
         browser = await playwright.firefox.launch()
+        context = await browser.new_context()
         tasks = [
-            fetch_url(browser, url, product_price_selector)
+            fetch_url(context, url, product_price_selector)
             for url, product_price_selector in zip(urls, price_selectors)
         ]
         results = await asyncio.gather(*tasks)
+        await context.close()
         await browser.close()
     return results
 
 
-async def fetch_url(browser: Browser, url: str, price_selector: str) -> str | None:
+async def fetch_url(context: BrowserContext, url: str, price_selector: str) -> str | None:
     """
     Fetches the given url and waits for the price selector to appear.
     If the price selector does not appear, returns None.
@@ -69,7 +71,7 @@ async def fetch_url(browser: Browser, url: str, price_selector: str) -> str | No
     if cached_result:
         return cached_result
 
-    page = await browser.new_page()
+    page = await context.new_page()
     try:
         await page.goto(url)
         price_loaded = page.locator(price_selector)
@@ -81,8 +83,6 @@ async def fetch_url(browser: Browser, url: str, price_selector: str) -> str | No
     except Exception as ex:
         log.debug(f"Error fetching url: {url}")
         log.debug(ex)
-    finally:
-        await page.close()
 
 
 async def parse_results(

@@ -89,9 +89,11 @@ class PlaywrightParser(AbstractParser):
     async def __aenter__(self):
         self.playwright = await async_playwright().start()
         self.browser = await self.playwright.chromium.launch()
+        self.context = await self.browser.new_context()
         return self
 
     async def __aexit__(self, *args: Any):
+        await self.context.close()
         await self.browser.close()
         await self.playwright.stop()
 
@@ -99,7 +101,7 @@ class PlaywrightParser(AbstractParser):
         self.html_content = html_content
 
     async def select_element(self, selector: str, type: str) -> str | None:
-        page = await self.browser.new_page()
+        page = await self.context.new_page()
         await page.set_content(self.html_content)
         element = page.locator(selector).first
         if element:
