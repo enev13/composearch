@@ -6,6 +6,7 @@ from urllib.parse import quote_plus, urljoin
 from asgiref.sync import sync_to_async
 from decouple import config
 from django.core.cache import cache
+from django.templatetags.static import static
 from playwright.async_api import BrowserContext, async_playwright
 
 from search.helpers import to_decimal
@@ -13,7 +14,7 @@ from search.models import DistributorSourceModel
 from search.parser import Parser
 from search.product import Product
 
-DEFAULT_PICTURE = "{% static '/images/device.png' %}'"
+DEFAULT_PICTURE = static("images/device.png")
 CACHE_TIMEOUT = config("CACHE_TIMEOUT", cast=int, default=60 * 60)
 log = logging.getLogger(__name__)
 
