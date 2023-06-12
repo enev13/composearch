@@ -48,7 +48,7 @@ def get_active_distributors() -> list[DistributorSourceModel]:
 
 async def fetch_results(urls, price_selectors):
     async with async_playwright() as playwright:
-        browser = await playwright.firefox.launch()
+        browser = await playwright.chromium.launch()
         context = await browser.new_context()
         tasks = [
             fetch_url(context, url, product_price_selector)
