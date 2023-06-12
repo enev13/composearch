@@ -47,7 +47,12 @@ def get_active_distributors() -> list[DistributorSourceModel]:
     return list(DistributorSourceModel.objects.filter(active=True))
 
 
-async def fetch_results(urls, price_selectors):
+async def fetch_results(urls: list[str], price_selectors: list[str]) -> list[str | None]:
+    """
+    Takes a list of urls and a list of price selectors.
+    Calls the fetch_url function, which fetches the url and waits for the price selector to appear.
+    Returns a list of html strings, in the same order as the urls.
+    """
     async with async_playwright() as playwright:
         browser = await playwright.chromium.launch()
         context = await browser.new_context()
