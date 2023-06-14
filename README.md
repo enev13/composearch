@@ -4,52 +4,54 @@ Composearch is a price comparison web app that combines the functionalities of a
 
 <img src="/composearch.png" width=75% alt="Composearch Preview"/>
 
-# Technologies Used
+You can see it up and running, deployed on Railway: https://composearch.up.railway.app
+
+## Technologies Used
 
 - **Python**: Powers the backend functionality of Composearch.
 - **Django**: Provides a robust framework for building the web application.
-- **PostgreSQL**: Stores and manages distributor data, integrated via psycopg3.
+- **PostgreSQL**: Stores and manages distributor data, integrated via psycopg 3.
 - **Playwright**: Enables efficient web scraping and data extraction from online stores.
 - **BeautifulSoup**: Facilitates HTML parsing and data extraction from web pages.
-- **Redis**: Implements caching functionality for improved performance.
+- **Redis**: Implements cache-aside (lazy loading) strategy for improved performance.
 - **TailwindCSS**: Enhances the visual aesthetics and responsiveness of the application.
 - **Poetry**: Manages the project's dependencies and package management.
 
-# Prerequisites
+## Prerequisites
 
 - Python 3.11
 - Poetry
+- Redis (optional)
 
-# Quick Start
+## Quick Start
 
-1. Checkout the project from github
+##### 1. Checkout the project from github
 
 ```
 git checkout https://github.com/enev13/composearch.git
 ```
 
-2. Rename .env.sample file in the project folder to .env and edit the environemnt variables if necessary.
+##### 2. Rename .env.sample file in the project folder to .env and edit the environemnt variables if necessary.
 
 ```
 mv .env.sample .env
 nano .env
 ```
 
-... 
-
-3. Install the project dependencies
+##### 3. Install the project dependencies
 
 ```
 poetry install
 ```
 
-4. Initialize Playwright (it will install its required browsers)
+##### 4. Initialize Playwright (it will install its required browsers)
 
 ```
 playwright install
+playwright install-deps
 ```
 
-5. Initialize the Django app
+##### 5. Initialize the Django app
 
 ```
 python manage.py migrate
@@ -58,21 +60,28 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-6. Open Django admin in your browser and fill some Distributor data
+##### 6. Fill in some Distributor data
+
+by either creating new database entries using Django admin
 
 ```
 http://127.0.0.1:8000/admin
 ```
 
-See more details below about the Distributor data that will be needed.
+or by loading the supplied fixtures file
+```
+python manage.py loaddata distributors.json
+```
 
-7. Open Composearch in your web browser
+(See more details below about the Distributor data format.)
+
+##### 7. Open Composearch in your web browser
 
 ```
 http://127.0.0.1:8000/
 ```
 
-# The DistributorSourceModel
+## The DistributorSourceModel
 
 In order to have a fully functional app, the database must be populated with distributor data.
 For each online store following data is needed:
@@ -88,12 +97,13 @@ For each online store following data is needed:
 - product_price_selector - CSS selector for the product price in the search results
 - active - indicates whether this distributor will be used in the searches
 
-# Further Reading
+## Further Reading
 
-- Playwright Documentation: `https://playwright.dev/python/docs/intro`
-- BeautifulSoup Documentation: `https://www.crummy.com/software/BeautifulSoup/bs4/doc/`
-- How to Use CSS Selectors: `https://www.w3schools.com/cssref/css_selectors.php`
+- Playwright Documentation: https://playwright.dev/python/docs/intro
+- BeautifulSoup Documentation: https://www.crummy.com/software/BeautifulSoup/bs4/doc/
+- How to Use CSS Selectors: https://www.w3schools.com/cssref/css_selectors.php
+- Using Caching in Django: https://docs.djangoproject.com/en/4.2/topics/cache/#basic-usage
 
-# License
+## License
 
 Composearch is released under the [MIT License](/LICENSE). Feel free to use, modify, and distribute the code as per the terms.
