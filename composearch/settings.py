@@ -153,6 +153,11 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+if DEBUG:
+    log_level = "DEBUG"
+else:
+    log_level = "INFO"
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -181,7 +186,7 @@ LOGGING = {
     },
     "root": {
         "handlers": ["console"],
-        "level": "INFO",
+        "level": log_level,
     },
 }
 
