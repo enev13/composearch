@@ -16,6 +16,8 @@ from search.product import Product
 
 DEFAULT_PICTURE = static("images/device.png")
 CACHE_TIMEOUT = config("CACHE_TIMEOUT", cast=int, default=60 * 60)
+BROWSER_TIMEOUT = config("BROWSER_TIMEOUT", cast=int, default=10_000)
+
 log = logging.getLogger(__name__)
 
 
@@ -26,8 +28,10 @@ async def perform_search(query: str) -> list[Product | None]:
     If an error occurs, returns an empty list.
     """
     distributors = await get_active_distributors()
+    query = quote_plus(query.encode("utf-8").strip().lower())
+
     urls = [
-        urljoin(distributor.base_url, distributor.search_string.replace("%s", quote_plus(query)))
+        urljoin(distributor.base_url, distributor.search_string.replace("%s", query))
         for distributor in distributors
     ]
     price_selectors = [distributor.product_price_selector for distributor in distributors]
@@ -56,6 +60,7 @@ async def fetch_results(urls: list[str], price_selectors: list[str]) -> list[str
     async with async_playwright() as playwright:
         browser = await playwright.chromium.launch()
         context = await browser.new_context()
+        context.set_default_timeout(BROWSER_TIMEOUT)
         tasks = [
             fetch_url(context, url, product_price_selector)
             for url, product_price_selector in zip(urls, price_selectors)
@@ -80,8 +85,8 @@ async def fetch_url(context: BrowserContext, url: str, price_selector: str) -> s
     page = await context.new_page()
     try:
         await page.goto(url)
-        price_loaded = page.locator(price_selector)
-        await price_loaded.wait_for(timeout=5000)
+        price_loaded = page.locator(price_selector).first
+        await price_loaded.wait_for(timeout=BROWSER_TIMEOUT / 2)
         html_content = await page.content()
         log.debug(f"Fetched url: {url}, length: {len(html_content)}")
         cache.set(url, html_content, CACHE_TIMEOUT)
