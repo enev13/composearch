@@ -20,5 +20,5 @@ async def results_view(request):
     else:
         results = []
     end_time = time.time()
-    log.debug(f"Search took {end_time - start_time} seconds")
+    log.debug(f"Search took {end_time - start_time:.2f} seconds")
     return render(request, "search/results.html", {"results": results, "query": query})
