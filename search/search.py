@@ -7,7 +7,7 @@ from asgiref.sync import sync_to_async
 from decouple import config
 from django.core.cache import cache
 from django.templatetags.static import static
-from playwright.async_api import BrowserContext, async_playwright
+from playwright.async_api import Browser, async_playwright
 
 from search.helpers import to_decimal
 from search.models import DistributorSourceModel
@@ -33,11 +33,8 @@ async def perform_search(query: str) -> list[Product | None]:
 
     async with async_playwright() as playwright:
         browser = await playwright.chromium.launch()
-        context = await browser.new_context()
-        context.set_default_timeout(BROWSER_TIMEOUT)
-        tasks = [fetch_result(context, distributor, query) for distributor in distributors]
+        tasks = [fetch_result(browser, distributor, query) for distributor in distributors]
         results = await asyncio.gather(*tasks)
-        await context.close()
         await browser.close()
 
     results = filter(None, results)
@@ -53,9 +50,9 @@ def get_active_distributors() -> list[DistributorSourceModel]:
     return list(DistributorSourceModel.objects.filter(active=True))
 
 
-async def fetch_result(context: BrowserContext, distributor: DistributorSourceModel, query) -> Product | None:
+async def fetch_result(browser: Browser, distributor: DistributorSourceModel, query) -> Product | None:
     """
-    Takes a BrowserContext, a DistributorSourceModel and a search query.
+    Takes a Browser, a DistributorSourceModel and a search query.
 
     Checks for the given url in the cache.
     If the url is not in the cache, fetches the url and stores the result in the cache.
@@ -77,6 +74,8 @@ async def fetch_result(context: BrowserContext, distributor: DistributorSourceMo
         return product
 
     # If the url is not in the cache, fetches the url.
+    context = await browser.new_context()
+    context.set_default_timeout(BROWSER_TIMEOUT)
     page = await context.new_page()
     html_content = ""
     product = None
@@ -89,6 +88,8 @@ async def fetch_result(context: BrowserContext, distributor: DistributorSourceMo
     except Exception as ex:
         log.debug(f"Error fetching url: {url}")
         log.debug(ex)
+
+    await context.close()
 
     # If the url is fetched successfully, parses the result.
     if html_content:
