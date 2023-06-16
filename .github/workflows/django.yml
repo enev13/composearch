@@ -26,9 +26,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install poetry
         if [ -f pyproject.toml ]; then poetry install; fi
-        playwright install
-        playwright install-deps
-        mv .env.sample .env
+        poetry run playwright install
+        poetry run playwright install-deps
+        poetry run mv .env.sample .env
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
