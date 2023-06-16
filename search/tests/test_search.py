@@ -2,10 +2,11 @@ from decimal import Decimal
 from unittest.mock import patch
 
 from django.test import TestCase
-from playwright.async_api import Browser
+from playwright.async_api import BrowserContext
 
 from search.models import DistributorSourceModel
-from search.search import DEFAULT_PICTURE, get_active_distributors, parse_results, perform_search, to_decimal
+from search.product import Product
+from search.search import DEFAULT_PICTURE, get_active_distributors, parse_html, perform_search, to_decimal
 
 
 class TestSearch(TestCase):
@@ -115,74 +116,76 @@ class TestSearch(TestCase):
         self.assertEqual(to_decimal("1.234.56"), Decimal("1234.56"))
         self.assertEqual(to_decimal("not a float"), None)
 
-    async def test_parse_results_normal_html(self):
-        products = await parse_results([self.distributor], [self.html])
-        self.assertEqual(products[0].name, "Test product")
-        self.assertEqual(products[0].url, "https://test.com/test-product")
-        self.assertEqual(products[0].picture_url, "https://test.com/test-product.jpg")
-        self.assertEqual(products[0].price, Decimal("9.08"))
-        self.assertEqual(products[0].currency, "EUR")
-        self.assertEqual(products[0].vat, 10)
-        self.assertEqual(products[0].shop, "TestShop")
-        self.assertEqual(products[0].shop_icon, "https://test.com/favicon.ico")
+    async def test_parse_html_normal_html(self):
+        product = await parse_html(self.distributor, self.html)
+        self.assertEqual(product.name, "Test product")
+        self.assertEqual(product.url, "https://test.com/test-product")
+        self.assertEqual(product.picture_url, "https://test.com/test-product.jpg")
+        self.assertEqual(product.price, Decimal("9.08"))
+        self.assertEqual(product.currency, "EUR")
+        self.assertEqual(product.vat, 10)
+        self.assertEqual(product.shop, "TestShop")
+        self.assertEqual(product.shop_icon, "https://test.com/favicon.ico")
 
-    async def test_parse_results_0_vat(self):
-        products = await parse_results([self.distributor_0_vat], [self.html])
-        self.assertEqual(products[0].name, "Test product")
-        self.assertEqual(products[0].url, "https://test.com/test-product")
-        self.assertEqual(products[0].picture_url, "https://test.com/test-product.jpg")
-        self.assertEqual(products[0].price, Decimal("9.99"))
-        self.assertEqual(products[0].currency, "EUR")
-        self.assertEqual(products[0].vat, 0)
-        self.assertEqual(products[0].shop, "TestShop")
-        self.assertEqual(products[0].shop_icon, "https://test.com/favicon.ico")
+    async def test_parse_html_0_vat(self):
+        product = await parse_html(self.distributor_0_vat, self.html)
+        self.assertEqual(product.name, "Test product")
+        self.assertEqual(product.url, "https://test.com/test-product")
+        self.assertEqual(product.picture_url, "https://test.com/test-product.jpg")
+        self.assertEqual(product.price, Decimal("9.99"))
+        self.assertEqual(product.currency, "EUR")
+        self.assertEqual(product.vat, 0)
+        self.assertEqual(product.shop, "TestShop")
+        self.assertEqual(product.shop_icon, "https://test.com/favicon.ico")
 
-    async def test_parse_results_no_name(self):
-        products = await parse_results([self.distributor], [self.html_no_name])
-        self.assertEqual(products, [])
+    async def test_parse_html_no_name(self):
+        product = await parse_html(self.distributor, self.html_no_name)
+        self.assertEqual(product, None)
 
-    async def test_parse_results_no_url(self):
-        products = await parse_results([self.distributor], [self.html_no_url])
-        self.assertEqual(products, [])
+    async def test_parse_html_no_url(self):
+        product = await parse_html(self.distributor, self.html_no_url)
+        self.assertEqual(product, None)
 
-    async def test_parse_results_no_picture(self):
-        products = await parse_results([self.distributor], [self.html_no_picture])
-        self.assertEqual(products[0].picture_url, DEFAULT_PICTURE)
+    async def test_parse_html_no_picture(self):
+        product = await parse_html(self.distributor, self.html_no_picture)
+        self.assertEqual(product.picture_url, DEFAULT_PICTURE)
 
-    async def test_parse_results_no_price(self):
-        products = await parse_results([self.distributor], [self.html_no_price])
-        self.assertEqual(products, [])
+    async def test_parse_html_no_price(self):
+        product = await parse_html(self.distributor, self.html_no_price)
+        self.assertEqual(product, None)
 
-    async def test_parse_results_no_product(self):
-        products = await parse_results([self.distributor], [self.html_no_product])
-        self.assertEqual(products, [])
+    async def test_parse_html_no_product(self):
+        product = await parse_html(self.distributor, self.html_no_product)
+        self.assertEqual(product, None)
 
-    async def test_parse_results_no_distributor(self):
-        products = await parse_results([], [self.html])
-        self.assertEqual(products, [])
+    async def test_parse_html_no_distributor(self):
+        product = await parse_html(None, self.html)
+        self.assertEqual(product, None)
 
-    async def test_parse_results_no_result(self):
-        products = await parse_results([self.distributor], [])
-        self.assertEqual(products, [])
+    async def test_parse_html_no_result(self):
+        product = await parse_html(self.distributor, "")
+        self.assertEqual(product, None)
 
-    async def test_parse_results_no_distributor_no_result(self):
-        products = await parse_results([], [])
-        self.assertEqual(products, [])
+    async def test_parse_html_no_distributor_no_result(self):
+        product = await parse_html(None, "")
+        self.assertEqual(product, None)
 
-    async def mock_fetch_url(browser: Browser, url: str, price_selector: str) -> str:
-        return """
-        <html>
-            <body>
-                <div id="name">Test product</div>
-                <a href="https://test.com/test-product">Test product</a>
-                <img src="https://test.com/test-product.jpg">
-                <div><span class="price">9.99</span></div>
-            </body>
-        </html>
-        """
+    async def mock_fetch_result(
+        context: BrowserContext, distributor: DistributorSourceModel, query
+    ) -> Product | None:
+        return Product(
+            name="Test product",
+            url="https://test.com/test-product",
+            picture_url="https://test.com/test-product.jpg",
+            price=Decimal("9.08"),
+            currency="EUR",
+            vat=10,
+            shop="TestShop",
+            shop_icon="https://test.com/favicon.ico",
+        )
 
-    @patch("search.search.fetch_url", side_effect=mock_fetch_url)
-    async def test_perform_search(self, mock_fetch_url):
+    @patch("search.search.fetch_result", side_effect=mock_fetch_result)
+    async def test_perform_search(self, mock_fetch_results):
         products = await perform_search("test")
         self.assertEqual(products[0].name, "Test product")
         self.assertEqual(products[0].url, "https://test.com/test-product")

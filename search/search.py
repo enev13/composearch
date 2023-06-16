@@ -16,7 +16,7 @@ from search.product import Product
 
 DEFAULT_PICTURE = static("images/device.png")
 CACHE_TIMEOUT = config("CACHE_TIMEOUT", cast=int, default=60 * 60)
-BROWSER_TIMEOUT = config("BROWSER_TIMEOUT", cast=int, default=10_000)
+BROWSER_TIMEOUT = config("BROWSER_TIMEOUT", cast=int, default=15_000)
 
 log = logging.getLogger(__name__)
 
@@ -24,23 +24,25 @@ log = logging.getLogger(__name__)
 async def perform_search(query: str) -> list[Product | None]:
     """
     Takes a search query, fetches the urls of all active distributors and performs the search.
+
     Returns a list of Product objects, sorted by price.
     If an error occurs, returns an empty list.
     """
     distributors = await get_active_distributors()
     query = quote_plus(query.encode("utf-8").strip().lower())
 
-    urls = [
-        urljoin(distributor.base_url, distributor.search_string.replace("%s", query))
-        for distributor in distributors
-    ]
-    price_selectors = [distributor.product_price_selector for distributor in distributors]
+    async with async_playwright() as playwright:
+        browser = await playwright.chromium.launch()
+        context = await browser.new_context()
+        context.set_default_timeout(BROWSER_TIMEOUT)
+        tasks = [fetch_result(context, distributor, query) for distributor in distributors]
+        results = await asyncio.gather(*tasks)
+        await context.close()
+        await browser.close()
 
-    results = await fetch_results(urls, price_selectors)
-
-    parsed_results = await parse_results(distributors, results)
-
-    return sorted(parsed_results, key=lambda product: product.price) if parsed_results else []
+    results = filter(None, results)
+    results = sorted(results, key=lambda product: product.price) if results else []
+    return results
 
 
 @sync_to_async
@@ -51,104 +53,85 @@ def get_active_distributors() -> list[DistributorSourceModel]:
     return list(DistributorSourceModel.objects.filter(active=True))
 
 
-async def fetch_results(urls: list[str], price_selectors: list[str]) -> list[str | None]:
+async def fetch_result(context: BrowserContext, distributor: DistributorSourceModel, query) -> Product | None:
     """
-    Takes a list of urls and a list of price selectors.
-    Calls the fetch_url function, which fetches the url and waits for the price selector to appear.
-    Returns a list of html strings, in the same order as the urls.
-    """
-    async with async_playwright() as playwright:
-        browser = await playwright.chromium.launch()
-        context = await browser.new_context()
-        context.set_default_timeout(BROWSER_TIMEOUT)
-        tasks = [
-            fetch_url(context, url, product_price_selector)
-            for url, product_price_selector in zip(urls, price_selectors)
-        ]
-        results = await asyncio.gather(*tasks)
-        await context.close()
-        await browser.close()
-    return results
+    Takes a BrowserContext, a DistributorSourceModel and a search query.
 
+    Checks for the given url in the cache.
+    If the url is not in the cache, fetches the url and stores the result in the cache.
 
-async def fetch_url(context: BrowserContext, url: str, price_selector: str) -> str | None:
-    """
-    Fetches the given url and waits for the price selector to appear.
+    Returns a Product object if the product could be parsed.
     If the price selector does not appear, returns None.
     If an exception occurs, returns None.
-    Returns the page's html content as a string.
     """
-    cached_result = cache.get(url)
-    if cached_result:
-        return cached_result
+    url = urljoin(distributor.base_url, distributor.search_string.replace("%s", query))
+    price_selector = distributor.product_price_selector
 
-    page = await context.new_page()
-    try:
-        await page.goto(url)
-        price_loaded = page.locator(price_selector).first
-        await price_loaded.wait_for(timeout=BROWSER_TIMEOUT / 2)
-        html_content = await page.content()
-        log.debug(f"Fetched url: {url}, length: {len(html_content)}")
-        cache.set(url, html_content, CACHE_TIMEOUT)
-        return html_content
-    except Exception as ex:
-        log.debug(f"Error fetching url: {url}")
-        log.debug(ex)
+    html_content = cache.get(url, None)
+
+    if not html_content:
+        page = await context.new_page()
+        try:
+            await page.goto(url)
+            price_loaded = page.locator(price_selector).first
+            await price_loaded.wait_for(timeout=BROWSER_TIMEOUT / 2)
+            html_content = await page.content()
+            log.debug(f"Fetched url: {url}, length: {len(html_content)}")
+            cache.set(url, html_content, CACHE_TIMEOUT)
+        except Exception as ex:
+            log.debug(f"Error fetching url: {url}")
+            log.debug(ex)
+
+    if html_content:
+        return await parse_html(distributor, html_content)
 
 
-async def parse_results(
-    distributors: list[DistributorSourceModel], results: list[str]
-) -> list[Product | None]:
+async def parse_html(distributor: DistributorSourceModel, result: str) -> Product | None:
     """
-    Takes a list of DistributorSourceModels and a list of html strings.
-    Parses the results from fetch_url and returns a list of Product objects.
+    Takes a DistributorSourceModels and a html string.
+
+    Parses the result and returns a Product object.
     If an error occurs or the product could not be parsed, returns None.
     """
-    products = []
-    for result, distributor in zip(results, distributors):
-        if result:
-            async with Parser(parser="bs4") as parser:
-                await parser.load_content(result)
-                product_name = await parser.select_element(distributor.product_name_selector, "text")
-                if product_name:
-                    try:
-                        currency = distributor.currency
-                        vat = distributor.included_vat
+    if not distributor or not result:
+        return None
 
-                        price = await parser.select_element(distributor.product_price_selector, "text")
-                        price = to_decimal(price)
-                        price /= 1 + Decimal(vat / 100)
+    async with Parser(parser="bs4") as parser:
+        await parser.load_content(result)
+        product_name = await parser.select_element(distributor.product_name_selector, "text")
+        if product_name:
+            try:
+                currency = distributor.currency
+                vat = distributor.included_vat
 
-                        url = await parser.select_element(distributor.product_url_selector, "href")
-                        url = url.replace(distributor.base_url, "")
-                        url = url[1:] if url.startswith("/") else url
-                        url = urljoin(distributor.base_url, url)
+                price = await parser.select_element(distributor.product_price_selector, "text")
+                price = to_decimal(price)
+                price /= 1 + Decimal(vat / 100)
 
-                        picture_url = await parser.select_element(
-                            distributor.product_picture_url_selector, "src"
-                        )
-                        if picture_url:
-                            picture_url = picture_url.replace(distributor.base_url, "")
-                            picture_url = picture_url[1:] if picture_url.startswith("/") else picture_url
-                            picture_url = urljoin(distributor.base_url, picture_url)
-                        else:
-                            picture_url = DEFAULT_PICTURE
-                        product = Product(
-                            name=product_name,
-                            price=price,
-                            currency=currency,
-                            vat=vat,
-                            url=url,
-                            picture_url=picture_url,
-                            shop=distributor.name,
-                            shop_icon=urljoin(distributor.base_url, "favicon.ico"),
-                        )
-                        products.append(product)
-                    except Exception as ex:
-                        log.debug(f"ERROR: {distributor.name}: {ex}")
-                        continue
+                url = await parser.select_element(distributor.product_url_selector, "href")
+                url = url.replace(distributor.base_url, "")
+                url = url[1:] if url.startswith("/") else url
+                url = urljoin(distributor.base_url, url)
+
+                picture_url = await parser.select_element(distributor.product_picture_url_selector, "src")
+                if picture_url:
+                    picture_url = picture_url.replace(distributor.base_url, "")
+                    picture_url = picture_url[1:] if picture_url.startswith("/") else picture_url
+                    picture_url = urljoin(distributor.base_url, picture_url)
                 else:
-                    log.debug(f"Product name not found for {distributor.name}")
-                    continue
-
-    return products
+                    picture_url = DEFAULT_PICTURE
+                product = Product(
+                    name=product_name,
+                    price=price,
+                    currency=currency,
+                    vat=vat,
+                    url=url,
+                    picture_url=picture_url,
+                    shop=distributor.name,
+                    shop_icon=urljoin(distributor.base_url, "favicon.ico"),
+                )
+                return product
+            except Exception as ex:
+                log.debug(f"ERROR: {distributor.name}: {ex}")
+        else:
+            log.debug(f"Product name not found for {distributor.name}")
