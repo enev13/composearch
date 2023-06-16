@@ -127,7 +127,7 @@
       "search_string": "productlist/search?query=%s",
       "currency": "EUR",
       "product_name_selector": "#pageWrapper > div.page-content-wrapper > div > div > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > h1",
-      "product_url_selector": "head > link:nth-child(60)",
+      "product_url_selector": "head > link:nth-child(59)",
       "product_picture_url_selector": "#pageWrapper > div.page-content-wrapper > div > div > div:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div > div > div > img",
       "product_price_selector": "#pageWrapper > div.page-content-wrapper > div > div > div:nth-child(2) > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(1) > div > div > div > div > div > div > p",
       "active": true,
