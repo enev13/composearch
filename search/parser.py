@@ -7,7 +7,7 @@ from playwright.async_api import async_playwright
 
 
 class AbstractParser(ABC):
-    _name = None
+    _name = ""
 
     @abstractmethod
     async def __aenter__(self):
@@ -67,18 +67,20 @@ class BeautifulSoupParser(AbstractParser):
     async def __aexit__(self, *args: Any):
         pass
 
-    async def load_content(self, html_content: str) -> None:
-        self.soup = await sync_to_async(BeautifulSoup)(html_content, "html.parser")
+    @sync_to_async
+    def load_content(self, html_content: str) -> None:
+        self.soup = BeautifulSoup(html_content, "html.parser")
 
-    async def select_element(self, selector: str, type: str) -> str | None:
-        element = await sync_to_async(self.soup.select_one)(selector)
+    @sync_to_async
+    def select_element(self, selector: str, type: str) -> str | None:
+        element = self.soup.select_one(selector)
         if element:
             if type == "text":
-                return await sync_to_async(element.text.strip)()
+                return element.text.strip()
             elif type == "href":
-                return await sync_to_async(element.get)("href")
+                return element.get("href")
             elif type == "src":
-                return await sync_to_async(element.get)("src")
+                return element.get("src")
             else:
                 raise ValueError(f"Type {type} not supported")
 

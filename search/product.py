@@ -9,7 +9,7 @@ class Product:
     name: str
     price: Decimal
     currency: str
-    vat: bool
+    vat: int
     url: str
     shop: str
     shop_icon: str

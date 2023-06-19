@@ -15,8 +15,8 @@ from search.parser import Parser
 from search.product import Product
 
 DEFAULT_PICTURE = static("images/device.png")
-CACHE_TIMEOUT = config("CACHE_TIMEOUT", cast=int, default=60 * 60)
-BROWSER_TIMEOUT = config("BROWSER_TIMEOUT", cast=int, default=15_000)
+CACHE_TIMEOUT = config("CACHE_TIMEOUT", cast=float, default=60 * 60)
+BROWSER_TIMEOUT = config("BROWSER_TIMEOUT", cast=float, default=15_000)
 
 log = logging.getLogger(__name__)
 
