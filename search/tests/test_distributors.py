@@ -32,6 +32,4 @@ class TestGetActiveDistributors(TestCase):
         )
 
     async def test_get_distributors(self):
-        self.assertEqual(
-            await get_active_distributors(), [self.distributor, self.distributor_0_vat]
-        )
+        self.assertEqual(await get_active_distributors(), [self.distributor, self.distributor_0_vat])

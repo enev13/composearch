@@ -2,7 +2,7 @@ from django.test import TestCase
 from .fixtures import sample_product, sample_product_0_vat
 
 from search.models import DistributorSourceModel
-from search.search import DEFAULT_PICTURE, parse_html
+from search.product import DEFAULT_PICTURE, Product
 
 
 class TestParseHTML(TestCase):
@@ -98,34 +98,34 @@ class TestParseHTML(TestCase):
         """
 
     async def test_parse_html_normal_html(self):
-        product = await parse_html(self.distributor, self.html)
+        product = await Product.from_html(self.distributor, self.html)
         self.assertEqual(product, sample_product)
 
     async def test_parse_html_0_vat(self):
-        product = await parse_html(self.distributor_0_vat, self.html)
+        product = await Product.from_html(self.distributor_0_vat, self.html)
         self.assertEqual(product, sample_product_0_vat)
 
     async def test_parse_html_no_name(self):
-        product = await parse_html(self.distributor, self.html_no_name)
+        product = await Product.from_html(self.distributor, self.html_no_name)
         self.assertIsNone(product)
 
     async def test_parse_html_no_url(self):
-        product = await parse_html(self.distributor, self.html_no_url)
+        product = await Product.from_html(self.distributor, self.html_no_url)
         self.assertIsNone(product)
 
     async def test_parse_html_no_picture(self):
-        product = await parse_html(self.distributor, self.html_no_picture)
+        product = await Product.from_html(self.distributor, self.html_no_picture)
         self.assertIsNotNone(product)
         self.assertEqual(product.picture_url, DEFAULT_PICTURE)
 
     async def test_parse_html_no_price(self):
-        product = await parse_html(self.distributor, self.html_no_price)
+        product = await Product.from_html(self.distributor, self.html_no_price)
         self.assertIsNone(product)
 
     async def test_parse_html_no_product(self):
-        product = await parse_html(self.distributor, self.html_no_product)
+        product = await Product.from_html(self.distributor, self.html_no_product)
         self.assertIsNone(product)
 
     async def test_parse_html_no_result(self):
-        product = await parse_html(self.distributor, "")
+        product = await Product.from_html(self.distributor, "")
         self.assertIsNone(product)

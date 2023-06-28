@@ -1,20 +1,15 @@
 import asyncio
 import logging
-from decimal import Decimal
 from urllib.parse import quote_plus, urljoin
 
 from asgiref.sync import sync_to_async
 from decouple import config
 from django.core.cache import cache
-from django.templatetags.static import static
 from playwright.async_api import Browser, async_playwright
 
-from search.helpers import to_decimal
 from search.models import DistributorSourceModel
-from search.parser import Parser
 from search.product import Product
 
-DEFAULT_PICTURE = static("images/device.png")
 CACHE_TIMEOUT = config("CACHE_TIMEOUT", cast=float, default=60 * 60)
 BROWSER_TIMEOUT = config("BROWSER_TIMEOUT", cast=float, default=15_000)
 
@@ -37,13 +32,14 @@ async def perform_search(query: str) -> list[Product | None]:
         results = await asyncio.gather(*tasks)
         await browser.close()
 
+    # Remove None values and sort by price
     results = filter(None, results)
     results = sorted(results, key=lambda product: product.price) if results else []
     return results
 
 
 @sync_to_async
-def get_active_distributors() -> list[DistributorSourceModel]:
+def get_active_distributors() -> list[DistributorSourceModel | None]:
     """
     Returns a list of all active DistributorSourceModels.
     """
@@ -70,8 +66,7 @@ async def fetch_result(browser: Browser, distributor: DistributorSourceModel, qu
     # If the url is in the cache, parses the result.
     if cached_content:
         log.debug(f"Using cached url: {url}, length: {len(cached_content)}")
-        product = await parse_html(distributor, cached_content)
-        return product
+        return await Product.from_html(distributor=distributor, html_content=cached_content)
 
     # If the url is not in the cache, fetches the url.
     context = await browser.new_context()
@@ -91,66 +86,15 @@ async def fetch_result(browser: Browser, distributor: DistributorSourceModel, qu
 
     await context.close()
 
-    # If the url is fetched successfully, parses the result.
+    # If the url is fetched successfully, parses the result into a Product object.
     if html_content:
-        product = await parse_html(distributor, html_content)
+        product = await Product.from_html(distributor=distributor, html_content=html_content)
 
     # If the product could be parsed, stores the result in the cache,
     # otherwise stores the result in the cache for a much shorter time.
     if product:
-        cache.set(url, html_content, CACHE_TIMEOUT)
+        cache.set(key=url, value=html_content, timeout=CACHE_TIMEOUT)
     else:
-        cache.set(url, html_content, CACHE_TIMEOUT / 10)
+        cache.set(key=url, value=html_content, timeout=CACHE_TIMEOUT / 10)
 
     return product
-
-
-async def parse_html(distributor: DistributorSourceModel, result: str) -> Product | None:
-    """
-    Takes a DistributorSourceModels and a html string.
-
-    Parses the result and returns a Product object.
-    If an error occurs or the product could not be parsed, returns None.
-    """
-    if not distributor or not result:
-        return None
-
-    async with Parser(parser="bs4") as parser:
-        await parser.load_content(result)
-        product_name = await parser.select_element(distributor.product_name_selector, "text")
-        if product_name:
-            try:
-                currency = distributor.currency
-                vat = distributor.included_vat
-
-                price = await parser.select_element(distributor.product_price_selector, "text")
-                price = to_decimal(price)
-                price /= 1 + Decimal(vat / 100)
-
-                url = await parser.select_element(distributor.product_url_selector, "href")
-                url = url.replace(distributor.base_url, "")
-                url = url[1:] if url.startswith("/") else url
-                url = urljoin(distributor.base_url, url)
-
-                picture_url = await parser.select_element(distributor.product_picture_url_selector, "src")
-                if picture_url:
-                    picture_url = picture_url.replace(distributor.base_url, "")
-                    picture_url = picture_url[1:] if picture_url.startswith("/") else picture_url
-                    picture_url = urljoin(distributor.base_url, picture_url)
-                else:
-                    picture_url = DEFAULT_PICTURE
-                product = Product(
-                    name=product_name,
-                    price=price,
-                    currency=currency,
-                    vat=vat,
-                    url=url,
-                    picture_url=picture_url,
-                    shop=distributor.name,
-                    shop_icon=urljoin(distributor.base_url, "favicon.ico"),
-                )
-                return product
-            except Exception as ex:
-                log.debug(f"ERROR: {distributor.name}: {ex}")
-        else:
-            log.debug(f"Product name not found for {distributor.name}")
