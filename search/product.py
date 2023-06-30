@@ -56,6 +56,7 @@ class Product:
                     )
                     price = to_decimal(price)
                     price /= 1 + Decimal(vat / 100)
+                    price = round(price, 2)
 
                     url = await parser.select_element(selector=distributor.product_url_selector, type="href")
                     url = url.replace(distributor.base_url, "")

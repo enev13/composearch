@@ -1,9 +1,7 @@
 """Helper functions"""
 
 import re
-from decimal import Decimal, getcontext
-
-getcontext().prec = 3
+from decimal import Decimal
 
 
 def to_decimal(text: str) -> Decimal | None:
