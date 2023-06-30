@@ -1,90 +1,11 @@
-from typing import Any
+import time
 
 from django.test import TestCase
-from playwright.async_api import Browser
 
 from search.models import DistributorSourceModel
 from search.search import fetch_result
-
-from .fixtures import sample_product
-
-return_html = dict(
-    {
-        "test": """
-                <html>
-                    <body>
-                        <div id="name">Test product</div>
-                        <a href="https://test.com/test-product">Test product</a>
-                        <img src="https://test.com/test-product.jpg">
-                        <div><span class="price">9.99</span></div>
-                    </body>
-                </html>
-            """,
-    },
-    default="",
-)
-
-
-class MockElement:
-    async def wait_for(self, timeout=0) -> None:
-        return
-
-
-class MockLocator:
-    first = MockElement()
-
-
-class MockPage:
-    def __init__(self) -> None:
-        self.url = ""
-
-    async def goto(self, *args) -> Any:
-        self.url = args[0]
-        return True
-
-    async def content(self, *args) -> str:
-        query = self.url.split("?q=")[1]
-        return return_html[query]
-
-    def locator(self, *args) -> MockLocator:
-        return MockLocator()
-
-
-class MockContext:
-    async def new_page(self, *args) -> MockPage:
-        return MockPage()
-
-    def set_default_timeout(self, *args) -> None:
-        return
-
-    async def close(self, *args) -> None:
-        return
-
-
-class MockBrowser(Browser):
-    def __init__(self) -> None:
-        pass
-
-    async def new_context(self, *args) -> MockContext:
-        return MockContext()
-
-    async def close(self, *args) -> None:
-        return
-
-
-class MockChromium:
-    async def launch(self, *args) -> MockBrowser:
-        return MockBrowser()
-
-
-class MockPlaywright:
-    async def __aenter__(self) -> MockBrowser:
-        return MockBrowser()
-
-    async def __aexit__(self, *args) -> None:
-        return
-
-    chromium = MockChromium()
+from search.tests.fixtures.playwright import CONTENT_TIME, WAIT_FOR_TIME, MockBrowser
+from search.tests.fixtures.products import sample_product, sample_product_2
 
 
 class TestFetchResult(TestCase):
@@ -110,3 +31,19 @@ class TestFetchResult(TestCase):
     async def test_fetch_result_no_query(self):
         product = await fetch_result(self.browser, self.distributor, "")
         self.assertIsNone(product)
+
+    async def test_fetch_result_not_from_cache(self):
+        start_time = time.time()
+        product = await fetch_result(self.browser, self.distributor, "test2")
+        end_time = time.time()
+        self.assertEqual(product, sample_product_2)
+        self.assertGreaterEqual(end_time - start_time, CONTENT_TIME + WAIT_FOR_TIME)
+
+    async def test_fetch_result_from_cache(self):
+        product = await fetch_result(self.browser, self.distributor, "test")
+        # Second time should be faster
+        start_time = time.time()
+        product = await fetch_result(self.browser, self.distributor, "test")
+        end_time = time.time()
+        self.assertEqual(product, sample_product)
+        self.assertLess(end_time - start_time, CONTENT_TIME + WAIT_FOR_TIME)

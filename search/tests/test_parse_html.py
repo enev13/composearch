@@ -1,5 +1,5 @@
 from django.test import TestCase
-from .fixtures import sample_product, sample_product_0_vat
+from .fixtures.products import sample_product, sample_product_0_vat
 
 from search.models import DistributorSourceModel
 from search.product import DEFAULT_PICTURE, Product

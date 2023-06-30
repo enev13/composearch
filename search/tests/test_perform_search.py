@@ -7,12 +7,10 @@ from search.models import DistributorSourceModel
 from search.product import Product
 from search.search import perform_search
 
-from .fixtures import sample_product
+from .fixtures.products import sample_product
 
 
-async def mock_fetch_result(
-    browser: BrowserContext, distributor: DistributorSourceModel, query
-) -> Product:
+async def mock_fetch_result(browser: BrowserContext, distributor: DistributorSourceModel, query) -> Product:
     return sample_product
 
 
