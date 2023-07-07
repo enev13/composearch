@@ -17,13 +17,46 @@ You can see it up and running, deployed on Railway: https://composearch.up.railw
 - **TailwindCSS**: Enhances the visual aesthetics and responsiveness of the application.
 - **Poetry**: Manages the project's dependencies and package management.
 
-## Prerequisites
+## Test Coverage Report
 
-- Python 3.11
-- Poetry
-- Redis (optional)
+| Name | Stmts | Miss | Cover |
+|------|-------|------|-------|
+| composearch\\_\_init\_\_.py | 0 | 0 | 100% |
+| composearch\settings.py | 35 | 4 | 89% |
+| search\\_\_init\_\_.py | 0 | 0 | 100% |
+| search\admin.py | 9 | 2 | 78% |
+| search\apps.py | 4 | 0 | 100% |
+| search\helpers.py | 10 | 0 | 100% |
+| search\migrations\0001_initial.py | 5 | 0 | 100% |
+| search\migrations\0002_distributorsourcemodel_product_currency_selector.py | 4 | 0 | 100% |
+| search\migrations\0003_remove_distributorsourcemodel_product_currency_selector_and_more.py | 4 | 0 | 100% |
+| search\migrations\0004_distributorsourcemodel_active.py | 4 | 0 | 100% |
+| search\migrations\0005_remove_distributorsourcemodel_including_vat_and_more.py | 4 | 0 | 100% |
+| search\migrations\\_\_init\_\_.py | 0 | 0 | 100% |
+| search\models.py | 14 | 0 | 100% |
+| search\parser.py | 88 | 8 | 91% |
+| search\product.py | 53 | 0 | 100% |
+| search\search.py | 54 | 0 | 100% |
+| search\tests\\_\_init\_\_.py | 0 | 0 | 100% |
+| search\tests\fixtures\playwright.py | 47 | 4 | 91% |
+| search\tests\fixtures\products.py | 5 | 0 | 100% |
+| search\tests\test_distributors.py | 9 | 0 | 100% |
+| search\tests\test_fetch_result.py | 29 | 0 | 100% |
+| search\tests\test_helpers.py | 15 | 0 | 100% |
+| search\tests\test_models.py | 48 | 0 | 100% |
+| search\tests\test_parse_html.py | 40 | 0 | 100% |
+| search\tests\test_parser.py | 53 | 1 | 98% |
+| search\tests\test_perform_search.py | 16 | 0 | 100% |
+| **TOTAL** | **550** | **19** | **97%** |
 
 ## Quick Start
+
+##### Prerequisites
+
+- Python 3.9+
+- Poetry
+- Redis (optional)
+- PostgreSQL (optional)
 
 ##### 1. Checkout the project from github
 
@@ -44,11 +77,10 @@ nano .env
 poetry install
 ```
 
-##### 4. Initialize Playwright (it will install its required browsers)
+##### 4. Initialize Playwright (it will install Chromium and other dependencies)
 
 ```
-playwright install
-playwright install-deps
+playwright install --with-deps chromium
 ```
 
 ##### 5. Initialize the Django app
