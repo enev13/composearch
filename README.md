@@ -64,7 +64,7 @@ You can see it up and running, deployed on Railway: https://composearch.up.railw
 git checkout https://github.com/enev13/composearch.git
 ```
 
-##### 2. Rename .env.sample file in the project folder to .env and edit the environemnt variables if necessary.
+##### 2. Rename .env.sample file in the project folder to .env and edit the environment variables if necessary.
 
 ```
 mv .env.sample .env
@@ -128,6 +128,27 @@ For each online store following data is needed:
 - product_picture_url_selector - CSS selector for the ulr of the product picture in the search results
 - product_price_selector - CSS selector for the product price in the search results
 - active - indicates whether this distributor will be used in the searches
+
+## Project Evolution / Next Steps
+
+This is how the project evolved since the beginning:
+- [x] Create a MVP using requests to get the HTML data and BeautifulSoup to parse it
+- [x] Replace requests library with aiohttp to be able to load pages simultaneously/asynchronously
+- [x] Use TailwindCSS to improve templates aesthetics
+- [x] Experiment with using MongoDB Atlas instead of SQLite (using Djongo/PyMongo)
+- [x] Drop aiohttp and use Playwright to be able to also get the dynamic content many pages have
+- [x] Add lazy-load caching of pages using Redis
+- [x] Migrate to PostreSQL for main database (using psycopg 3 driver)
+- [x] Experiment with using Playwright also as parser instead of BeautifulSoup
+- [x] Refactor html page parsing for decoupling from the concrete parser library and keep BeautifulSoup as default parser
+- [x] Adjust project dependencies for deployment in Railway.app
+- [x] Add Github Actions workflow
+
+And these are the currently planned steps in its development:
+- [ ] Add intermediate "Loading" page for better user experience
+- [ ] Replace the "Loading" page with dynamic search results loading using Django Channels
+- [ ] Keep statistic of the top XX most used search queries and use Celery to keep them up-to-date in cache
+
 
 ## Further Reading
 
