@@ -30,3 +30,8 @@ RUN mv .env.sample .env
 
 # Run Playwright installation commands
 RUN playwright install --with-deps chromium
+
+RUN chmod -R +x /scripts
+
+# Run the application
+CMD ["run.sh"]
