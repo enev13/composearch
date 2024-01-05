@@ -27,7 +27,6 @@ jobs:
           if [ -f pyproject.toml ]; then poetry install; fi
           poetry run playwright install --with-deps chromium
           poetry run mv .env.sample .env
-          export PRODUCTION=False
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
