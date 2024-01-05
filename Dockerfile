@@ -18,6 +18,9 @@ WORKDIR /app
 # Copy the project code
 COPY . .
 
+# Copy the run.sh file
+COPY run.sh .
+
 # Copy the pyproject.toml and poetry.lock files
 COPY poetry.lock pyproject.toml ./
 
@@ -34,4 +37,4 @@ RUN playwright install --with-deps chromium
 RUN chmod +x run.sh
 
 # Run the application
-CMD ["run.sh"]
+CMD ["./run.sh"]
