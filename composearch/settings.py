@@ -83,11 +83,11 @@ if PRODUCTION:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
-            "HOST": config("DB_HOST"),
-            "NAME": config("DB_NAME"),
-            "USER": config("DB_USER"),
-            "PORT": config("DB_PORT"),
-            "PASSWORD": config("DB_PASS"),
+            "HOST": config("POSTGRES_HOST"),
+            "NAME": config("POSTGRES_NAME"),
+            "USER": config("POSTGRES_USER"),
+            "PORT": config("POSTGRES_PORT"),
+            "PASSWORD": config("POSTGRES_PASSWORD"),
         },
     }
 else:
