@@ -50,5 +50,17 @@ services:
     ports:
       - 6379:6379
 
+  celery:
+    build:
+      context: .
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    command: celery -A composearch worker -B --loglevel=info
+    restart: always
+
 volumes:
   postgres_data:
