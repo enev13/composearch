@@ -146,7 +146,7 @@ This is how the project evolved since the beginning:
 
 And these are the currently planned steps in its development:
 - [x] Dockerize the project
-- [ ] Add intermediate "Loading" page for better user experience
+- [x] Add intermediate "Loading" page for better user experience
 - [ ] Replace the "Loading" page with dynamic search results loading using Django Channels
 - [ ] Keep statistic of the top XX most used search queries and use Celery to keep them up-to-date in cache
 
