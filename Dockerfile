@@ -1,4 +1,4 @@
-FROM --platform=amd64 mcr.microsoft.com/playwright/python:v1.40.0-jammy
+FROM --platform=amd64 mcr.microsoft.com/playwright/python:v1.64.1-noble
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1

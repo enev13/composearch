@@ -53,7 +53,7 @@ You can see it up and running, deployed on Railway: https://composearch.up.railw
 
 ##### Prerequisites
 
-- Python 3.9+
+- Python 3.11+
 - Poetry
 - Redis (optional)
 - PostgreSQL (optional)
@@ -145,7 +145,7 @@ This is how the project evolved since the beginning:
 - [x] Add Github Actions workflow
 
 And these are the currently planned steps in its development:
-- [ ] Dockerize the project
+- [x] Dockerize the project
 - [ ] Add intermediate "Loading" page for better user experience
 - [ ] Replace the "Loading" page with dynamic search results loading using Django Channels
 - [ ] Keep statistic of the top XX most used search queries and use Celery to keep them up-to-date in cache
@@ -156,7 +156,7 @@ And these are the currently planned steps in its development:
 - Playwright Documentation: https://playwright.dev/python/docs/intro
 - BeautifulSoup Documentation: https://www.crummy.com/software/BeautifulSoup/bs4/doc/
 - How to Use CSS Selectors: https://www.w3schools.com/cssref/css_selectors.php
-- Using Caching in Django: https://docs.djangoproject.com/en/4.2/topics/cache/#basic-usage
+- Using Caching in Django: https://docs.djangoproject.com/en/5.2/topics/cache/#basic-usage
 
 ## License
 
