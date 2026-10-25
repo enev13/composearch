@@ -1,0 +1,11 @@
+{% extends 'search/index.html' %}
+{% block title %}
+<title>Composearch - Search results for "{{ query }}"</title>
+{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="py-12 text-center">
+        {% include "search/results_fragment.html" %}
+    </div>
+</div>
+{% endblock %}
