@@ -11,6 +11,7 @@ class TestSearchView(TestCase):
         self.assertTemplateUsed(response, "search/results.html")
         self.assertContains(response, "/search/stream/?query=")
         self.assertContains(response, "test")
+        self.assertContains(response, 'id="search-completed"')
 
 
 class TestHomeView(TestCase):

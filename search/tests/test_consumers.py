@@ -1,3 +1,4 @@
+import json
 from unittest.mock import patch
 
 from django.test import TestCase
@@ -36,14 +37,22 @@ class TestSearchStreamConsumer(TestCase):
             [(k.lower(), v.lower()) for k, v in start["headers"]],
         )
 
-        body = b"".join(
-            m["body"] for m in messages if m["type"] == "http.response.body"
-        ).decode("utf-8")
+        body_messages = [m for m in messages if m["type"] == "http.response.body"]
+        body = b"".join(m["body"] for m in body_messages).decode("utf-8")
 
         self.assertIn("event: product", body)
         self.assertIn("event: done", body)
         self.assertLess(body.index("event: product"), body.index("event: done"))
         self.assertIn(sample_product.name, body)
+
+        done_body = body_messages[-1]["body"].decode("utf-8")
+        payload = None
+        for line in done_body.split("\n"):
+            if line.startswith("data: "):
+                payload = json.loads(line[len("data: "):])
+        self.assertIsNotNone(payload)
+        self.assertIn("seconds", payload)
+        self.assertGreaterEqual(payload["seconds"], 0)
 
     async def test_consumer_empty_query_sends_error(self):
         messages = await self._run_consumer(b"")

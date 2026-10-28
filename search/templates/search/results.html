@@ -20,6 +20,7 @@
                 <tbody class="divide-y divide-gray-300" id="results-table-body"></tbody>
             </table>
         </div>
+        <p id="search-completed" class="mt-6 text-lg text-gray-600 hidden"></p>
         <p id="error-message" class="mt-6 text-xl text-gray-500 hidden">
             Something went wrong. Please try again.
         </p>
@@ -37,6 +38,7 @@
         var tableContainer = document.getElementById("results-table-container");
         var resultsTableBody = document.getElementById("results-table-body");
         var errorMessage = document.getElementById("error-message");
+        var completedMessage = document.getElementById("search-completed");
         var products = [];
 
         function buildRow(product) {
@@ -105,8 +107,17 @@
             renderRows();
         });
 
-        stream.addEventListener("done", function () {
+        stream.addEventListener("done", function (event) {
             stream.close();
+            var seconds = "0.00";
+            try {
+                var doneData = JSON.parse(event.data);
+                if (typeof doneData.seconds === "number") {
+                    seconds = doneData.seconds.toFixed(2);
+                }
+            } catch (e) {}
+            completedMessage.textContent = "Search completed in " + seconds + " seconds";
+            completedMessage.classList.remove("hidden");
             if (products.length === 0) {
                 loadingIndicator.classList.add("hidden");
                 tableContainer.classList.add("hidden");

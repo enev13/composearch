@@ -1,4 +1,5 @@
 import json
+import time
 from urllib.parse import parse_qs
 
 from channels.generic.http import AsyncHttpConsumer
@@ -29,9 +30,13 @@ class SearchStreamConsumer(AsyncHttpConsumer):
             await self.send_body(b"event: error\ndata: {}\n\n", more_body=False)
             return
 
+        start_time = time.perf_counter()
         async for product in stream_search(query):
             data = json.dumps(product.to_dict())
             frame = f"event: product\ndata: {data}\n\n".encode("utf-8")
             await self.send_body(frame, more_body=True)
 
-        await self.send_body(b"event: done\ndata: {}\n\n", more_body=False)
+        elapsed = time.perf_counter() - start_time
+        done_data = json.dumps({"seconds": round(elapsed, 2)})
+        done_frame = f"event: done\ndata: {done_data}\n\n".encode("utf-8")
+        await self.send_body(done_frame, more_body=False)
