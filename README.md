@@ -10,10 +10,12 @@ You can see it up and running, deployed on Railway: https://composearch.up.railw
 
 - **Python**: Powers the backend functionality of Composearch.
 - **Django**: Provides a robust framework for building the web application.
+- **Django Channels**: Streams search results to the browser via Server-Sent Events.
 - **PostgreSQL**: Stores and manages distributor data, integrated via psycopg 3.
 - **Playwright**: Enables efficient web scraping and data extraction from online stores.
 - **BeautifulSoup**: Facilitates HTML parsing and data extraction from web pages.
-- **Redis**: Implements cache-aside (lazy loading) strategy for improved performance.
+- **Redis**: Implements cache-aside (lazy loading) strategy for improved performance and serves as the Celery broker.
+- **Celery**: Runs background tasks to keep the top search queries up to date.
 - **TailwindCSS**: Enhances the visual aesthetics and responsiveness of the application.
 - **Poetry**: Manages the project's dependencies and package management.
 
@@ -89,7 +91,7 @@ playwright install --with-deps chromium
 python manage.py migrate
 python manage.py collectstatic
 python manage.py createsuperuser
-python manage.py runserver
+uvicorn composearch.asgi:application --reload
 ```
 
 ##### 6. Fill in some Distributor data
@@ -147,8 +149,8 @@ This is how the project evolved since the beginning:
 And these are the currently planned steps in its development:
 - [x] Dockerize the project
 - [x] Add intermediate "Loading" page for better user experience
-- [ ] Replace the "Loading" page with dynamic search results loading using Django Channels
-- [ ] Keep statistic of the top XX most used search queries and use Celery to keep them up-to-date in cache
+- [x] Replace the "Loading" page with dynamic search results loading using Django Channels
+- [x] Keep statistic of the top 100 most used search queries and use Celery to keep them up-to-date in cache
 
 
 ## Further Reading

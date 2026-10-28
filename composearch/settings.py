@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "channels",
     "search",
 ]
 
@@ -74,6 +75,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "composearch.wsgi.application"
+ASGI_APPLICATION = "composearch.asgi.application"
 
 
 # Database
@@ -203,3 +205,7 @@ else:
             "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
         },
     }
+
+
+CELERY_BROKER_URL = config("REDIS_URL", default="redis://localhost:6379/0")
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True

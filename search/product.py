@@ -28,6 +28,21 @@ class Product:
     shop_icon: str
     picture_url: str
 
+    def to_dict(self) -> dict:
+        """
+        Returns a JSON-safe dict representation of the product.
+        """
+        return {
+            "name": self.name,
+            "price": str(self.price),
+            "currency": self.currency,
+            "vat": self.vat,
+            "url": self.url,
+            "shop": self.shop,
+            "shop_icon": self.shop_icon,
+            "picture_url": self.picture_url,
+        }
+
     @staticmethod
     async def from_html(
         distributor: DistributorSourceModel, html_content: str, parser="bs4"

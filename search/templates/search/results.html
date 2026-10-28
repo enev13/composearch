@@ -1,11 +1,139 @@
 {% extends 'search/index.html' %}
 {% block title %}
-<title>Composearch - Search results for "{{ query }}"</title>
+<title>Composearch - Searching for "{{ query }}"</title>
 {% endblock %}
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="py-12 text-center">
-        {% include "search/results_fragment.html" %}
+    <div class="py-12 text-center" id="search-results-container" data-query="{{ query }}">
+        <div role="status" id="loading-indicator">
+            <svg class="animate-spin mx-auto h-12 w-12 text-teal-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="mt-6 text-xl text-gray-500">Searching for "{{ query }}"...</p>
+        </div>
+        <div id="results-table-container" class="hidden">
+            <h2 class="text-2xl font-medium text-gray-900">
+                Search results for "{{ query }}"
+            </h2>
+            <table class="mt-6 w-full border-collapse border border-gray-300 text-left">
+                <tbody class="divide-y divide-gray-300" id="results-table-body"></tbody>
+            </table>
+        </div>
+        <p id="search-completed" class="mt-6 text-lg text-gray-600 hidden"></p>
+        <p id="error-message" class="mt-6 text-xl text-gray-500 hidden">
+            Something went wrong. Please try again.
+        </p>
+        <noscript>
+            <p class="mt-6 text-xl text-gray-500">JavaScript is disabled.</p>
+            <a class="text-l font-medium text-teal-600 hover:text-teal-900" href="/search/fallback/?query={{ query|urlencode }}">View results</a>
+        </noscript>
     </div>
 </div>
+<script>
+    (function () {
+        var container = document.getElementById("search-results-container");
+        var query = container.getAttribute("data-query");
+        var loadingIndicator = document.getElementById("loading-indicator");
+        var tableContainer = document.getElementById("results-table-container");
+        var resultsTableBody = document.getElementById("results-table-body");
+        var errorMessage = document.getElementById("error-message");
+        var completedMessage = document.getElementById("search-completed");
+        var products = [];
+
+        function buildRow(product) {
+            var tr = document.createElement("tr");
+
+            var pictureCell = document.createElement("td");
+            pictureCell.className = "p-3";
+            var pictureLink = document.createElement("a");
+            pictureLink.href = product.url;
+            var picture = document.createElement("img");
+            picture.src = product.picture_url;
+            picture.alt = product.name;
+            picture.height = 42;
+            picture.width = 42;
+            pictureLink.appendChild(picture);
+            pictureCell.appendChild(pictureLink);
+
+            var nameCell = document.createElement("td");
+            nameCell.className = "p-3";
+            var nameLink = document.createElement("a");
+            nameLink.href = product.url;
+            nameLink.className = "text-l font-medium text-teal-600 hover:text-teal-900";
+            nameLink.target = "_blank";
+            nameLink.textContent = product.name;
+            nameCell.appendChild(nameLink);
+
+            var priceCell = document.createElement("td");
+            priceCell.className = "p-3";
+            priceCell.textContent = product.price + " " + product.currency;
+
+            var shopCell = document.createElement("td");
+            shopCell.className = "p-3";
+            var shopIcon = document.createElement("img");
+            shopIcon.src = product.shop_icon;
+            shopIcon.alt = product.shop;
+            shopIcon.height = 16;
+            shopIcon.width = 16;
+            shopCell.appendChild(shopIcon);
+            shopCell.appendChild(document.createTextNode(" " + product.shop));
+
+            tr.appendChild(pictureCell);
+            tr.appendChild(nameCell);
+            tr.appendChild(priceCell);
+            tr.appendChild(shopCell);
+            return tr;
+        }
+
+        function renderRows() {
+            products.sort(function (a, b) {
+                return parseFloat(a.price) - parseFloat(b.price);
+            });
+            resultsTableBody.innerHTML = "";
+            products.forEach(function (product) {
+                resultsTableBody.appendChild(buildRow(product));
+            });
+        }
+
+        var stream = new EventSource("/search/stream/?query=" + encodeURIComponent(query));
+
+        stream.addEventListener("product", function (event) {
+            var product = JSON.parse(event.data);
+            products.push(product);
+            loadingIndicator.classList.add("hidden");
+            errorMessage.classList.add("hidden");
+            tableContainer.classList.remove("hidden");
+            renderRows();
+        });
+
+        stream.addEventListener("done", function (event) {
+            stream.close();
+            var seconds = "0.00";
+            try {
+                var doneData = JSON.parse(event.data);
+                if (typeof doneData.seconds === "number") {
+                    seconds = doneData.seconds.toFixed(2);
+                }
+            } catch (e) {}
+            completedMessage.textContent = "Search completed in " + seconds + " seconds";
+            completedMessage.classList.remove("hidden");
+            if (products.length === 0) {
+                loadingIndicator.classList.add("hidden");
+                tableContainer.classList.add("hidden");
+                errorMessage.textContent = "No results found.";
+                errorMessage.classList.remove("hidden");
+            }
+        });
+
+        stream.addEventListener("error", function () {
+            stream.close();
+            if (products.length === 0) {
+                loadingIndicator.classList.add("hidden");
+                tableContainer.classList.add("hidden");
+                errorMessage.classList.remove("hidden");
+            }
+        });
+    })();
+</script>
 {% endblock %}

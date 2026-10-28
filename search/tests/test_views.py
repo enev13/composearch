@@ -3,42 +3,56 @@ from unittest.mock import AsyncMock, patch
 from django.test import AsyncClient, TestCase
 
 
-class TestLoadingView(TestCase):
-    def test_loading_view_renders(self):
+class TestSearchView(TestCase):
+    @patch("search.views.record_query")
+    def test_search_view_renders(self, mock_record_query):
         response = self.client.get("/search/", {"query": "test"})
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "search/loading.html")
-        self.assertContains(response, 'Searching for "test"')
+        self.assertTemplateUsed(response, "search/results.html")
+        self.assertContains(response, "/search/stream/?query=")
+        self.assertContains(response, "test")
+        self.assertContains(response, 'id="search-completed"')
 
-    def test_loading_view_without_query(self):
-        response = self.client.get("/search/")
+
+class TestHomeView(TestCase):
+    @patch("search.views.get_top_search_queries_cached")
+    def test_home_view_shows_trending(self, mock_get_top):
+        mock_get_top.return_value = [{"query": "resistor", "count": 5}]
+
+        response = self.client.get("/")
+
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "search/loading.html")
+        self.assertTemplateUsed(response, "search/index.html")
+        self.assertContains(response, "Trending searches")
+        self.assertContains(response, "resistor")
 
 
-class TestResultsView(TestCase):
+class TestSearchViewRecordsQuery(TestCase):
+    @patch("search.views.record_query")
+    def test_search_view_records_query(self, mock_record_query):
+        response = self.client.get("/search/", {"query": "Hello World"})
+        self.assertEqual(response.status_code, 200)
+        mock_record_query.assert_called_once_with("Hello World")
+
+
+class TestSearchFallbackView(TestCase):
     def setUp(self):
         self.async_client = AsyncClient()
 
     @patch("search.views.perform_search", new_callable=AsyncMock)
-    async def test_results_view_ajax_returns_fragment(self, mock_perform_search):
+    async def test_search_fallback_view_returns_results(self, mock_perform_search):
         mock_perform_search.return_value = []
         response = await self.async_client.get(
-            "/search/results/",
-            {"query": "test", "fragment": 1},
+            "/search/fallback/",
+            {"query": "test"},
         )
         self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "search/results_fallback.html")
         self.assertContains(response, "No results found")
-        # The fragment has no wrapping <html> document.
-        self.assertNotContains(response, "<html")
         mock_perform_search.assert_awaited_once_with("test")
 
-    @patch("search.views.perform_search", new_callable=AsyncMock)
-    async def test_results_view_non_ajax_returns_full_page(self, mock_perform_search):
-        mock_perform_search.return_value = []
-        response = await self.async_client.get("/search/results/", {"query": "test"})
+    async def test_search_fallback_view_without_query(self):
+        response = await self.async_client.get("/search/fallback/")
         self.assertEqual(response.status_code, 200)
-        # The full page wraps the fragment in a complete HTML document.
-        self.assertContains(response, "<html")
+        self.assertTemplateUsed(response, "search/results_fallback.html")
         self.assertContains(response, "No results found")
-        mock_perform_search.assert_awaited_once_with("test")

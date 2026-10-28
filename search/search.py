@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from collections.abc import AsyncIterator
 from urllib.parse import quote_plus, urljoin
 
 from asgiref.sync import sync_to_async
@@ -36,6 +37,34 @@ async def perform_search(query: str) -> list[Product | None]:
     results = filter(None, results)
     results = sorted(results, key=lambda product: product.price) if results else []
     return results
+
+
+async def stream_search(query: str) -> AsyncIterator[Product]:
+    """
+    Streams products as each active distributor returns them.
+
+    Yields each non-None Product in completion order (fastest first), so the
+    browser can render results progressively via Server-Sent Events.
+    """
+    distributors = await get_active_distributors()
+    query = quote_plus(query.encode("utf-8").strip().lower())
+
+    if not distributors:
+        return
+
+    async with async_playwright() as playwright:
+        browser = await playwright.chromium.launch()
+        try:
+            tasks = [
+                fetch_result(browser, distributor, query)
+                for distributor in distributors
+            ]
+            for completed in asyncio.as_completed(tasks):
+                product = await completed
+                if product is not None:
+                    yield product
+        finally:
+            await browser.close()
 
 
 @sync_to_async
