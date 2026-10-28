@@ -28,7 +28,7 @@ async def perform_search(query: str) -> list[Product | None]:
     query = quote_plus(query.encode("utf-8").strip().lower())
 
     async with async_playwright() as playwright:
-        browser = await playwright.chromium.launch()
+        browser = await playwright.chromium.launch(args=["--disable-dev-shm-usage"])
         tasks = [fetch_result(browser, distributor, query) for distributor in distributors]
         results = await asyncio.gather(*tasks)
         await browser.close()
@@ -53,7 +53,7 @@ async def stream_search(query: str) -> AsyncIterator[Product]:
         return
 
     async with async_playwright() as playwright:
-        browser = await playwright.chromium.launch()
+        browser = await playwright.chromium.launch(args=["--disable-dev-shm-usage"])
         try:
             tasks = [
                 fetch_result(browser, distributor, query)

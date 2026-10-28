@@ -25,7 +25,11 @@ class MockBrowser:
 
 
 class MockChromium:
-    async def launch(self):
+    def __init__(self):
+        self.launch_args = None
+
+    async def launch(self, *args, **kwargs):
+        self.launch_args = kwargs.get("args")
         return MockBrowser()
 
 
@@ -75,6 +79,10 @@ class TestStreamSearch(TestCase):
         products = [product async for product in stream_search("test")]
         self.assertEqual(products, [sample_product_2, sample_product])
         self.assertEqual(mock_playwright.call_count, 1)
+        self.assertEqual(
+            mock_playwright.return_value.chromium.launch_args,
+            ["--disable-dev-shm-usage"],
+        )
 
     @patch("search.search.async_playwright", return_value=MockPlaywright())
     async def test_stream_search_no_active_distributors(self, mock_playwright):
