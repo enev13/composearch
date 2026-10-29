@@ -1,7 +1,7 @@
 #!/bin/sh
+set -e
 
 python3 manage.py collectstatic --noinput
-python3 manage.py migrate
-python3 manage.py flush --no-input
-python3 manage.py loaddata distributors.json
-uvicorn composearch.asgi:application --host 0.0.0.0 --port 8000 --workers 3
+python3 manage.py migrate --noinput
+python3 manage.py seed_distributors
+uvicorn composearch.asgi:application --host 0.0.0.0 --port "${PORT:-8000}"
