@@ -76,7 +76,12 @@ class BeautifulSoupParser(AbstractParser):
         element = self.soup.select_one(selector)
         if element:
             if type == "text":
-                return element.text.strip()
+                # Clone the element to avoid modifying the original
+                clone = element.__copy__()
+                # Remove strikethrough price spans to avoid extracting both prices
+                for strikethrough in clone.find_all('span', class_='streichpreis'):
+                    strikethrough.decompose()
+                return clone.text.strip()
             elif type == "href":
                 return element.get("href")
             elif type == "src":
@@ -105,13 +110,22 @@ class PlaywrightParser(AbstractParser):
     async def select_element(self, selector: str, type: str) -> str | None:
         page = await self.context.new_page()
         await page.set_content(self.html_content)
-        element = page.locator(selector).first
+        element = await page.query_selector(selector)
         if element:
             if type == "text":
-                return await element.inner_text()
+                # Get text content excluding strikethrough price spans
+                js_code = '''el => {
+                    const clone = el.cloneNode(true);
+                    const strikethrough = clone.querySelector("span.streichpreis");
+                    if (strikethrough) strikethrough.remove();
+                    return clone.innerText.trim();
+                }'''
+                return await element.evaluate(js_code)
             elif type == "href":
                 return await element.get_attribute("href")
             elif type == "src":
                 return await element.get_attribute("src")
             else:
                 raise ValueError(f"Type {type} not supported")
+        await page.close()
+        return None

@@ -77,3 +77,67 @@ class TestParser(TestCase):
             )
             with self.assertRaises(ValueError):
                 await parser.select_element("a", "invalid")
+
+    # Select element with strikethrough price - should exclude strikethrough span
+    async def test_parser_bs4_select_element_with_strikethrough(self):
+        async with Parser("bs4") as parser:
+            html = '''
+            <html><body><table><tr>
+            <td class="price">
+                <div>
+                    <span class="rabatt u5p"> </span>
+                    64,58 EUR <span class="streichpreis">67,23 EUR</span>
+                </div>
+            </td>
+            </tr></table></body></html>
+            '''
+            await parser.load_content(html)
+            result = await parser.select_element("td.price > div", "text")
+            self.assertEqual(result, "64,58 EUR")
+            # Should not include strikethrough price
+            self.assertNotIn("67,23 EUR", result)
+
+    async def test_parser_playwright_select_element_with_strikethrough(self):
+        async with Parser("playwright") as parser:
+            html = '''
+            <html><body><table><tr>
+            <td class="price">
+                <div>
+                    <span class="rabatt u5p"> </span>
+                    64,58 EUR <span class="streichpreis">67,23 EUR</span>
+                </div>
+            </td>
+            </tr></table></body></html>
+            '''
+            await parser.load_content(html)
+            result = await parser.select_element("td.price > div", "text")
+            self.assertEqual(result, "64,58 EUR")
+            # Should not include strikethrough price
+            self.assertNotIn("67,23 EUR", result)
+
+    # Select element without strikethrough price - should work normally
+    async def test_parser_bs4_select_element_without_strikethrough(self):
+        async with Parser("bs4") as parser:
+            html = '''
+            <html><body><table><tr>
+            <td class="price">
+                <div>25,40 EUR</div>
+            </td>
+            </tr></table></body></html>
+            '''
+            await parser.load_content(html)
+            result = await parser.select_element("td.price > div", "text")
+            self.assertEqual(result, "25,40 EUR")
+
+    async def test_parser_playwright_select_element_without_strikethrough(self):
+        async with Parser("playwright") as parser:
+            html = '''
+            <html><body><table><tr>
+            <td class="price">
+                <div>25,40 EUR</div>
+            </td>
+            </tr></table></body></html>
+            '''
+            await parser.load_content(html)
+            result = await parser.select_element("td.price > div", "text")
+            self.assertEqual(result, "25,40 EUR")
