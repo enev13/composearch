@@ -283,5 +283,95 @@
       "active": true,
       "included_vat": 20
     }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "Conrad Electronic",
+      "base_url": "https://www.conrad.com/",
+      "search_string": "en/search.html?q=%s",
+      "currency": "EUR",
+      "product_name_selector": "h2",
+      "product_url_selector": "h2 a",
+      "product_picture_url_selector": "div[data-purpose=\"picture\"] img",
+      "product_price_selector": "span[data-purpose=\"current-price\"]",
+      "active": false,
+      "included_vat": 19
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "Elsner Elektronik",
+      "base_url": "https://www.elsner-elektronik.de/",
+      "search_string": "en/catalogsearch/result/?q=%s",
+      "currency": "EUR",
+      "product_name_selector": ".product-item-link",
+      "product_url_selector": ".product-item-link",
+      "product_picture_url_selector": ".product-image-photo",
+      "product_price_selector": ".price",
+      "active": false,
+      "included_vat": 19
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "Elektro4000",
+      "base_url": "https://www.elektro4000.de/",
+      "search_string": "advanced_search_result.php?keywords=%s",
+      "currency": "EUR",
+      "product_name_selector": "div.listingbox-price",
+      "product_url_selector": "a[href*=\"::\"] img",
+      "product_picture_url_selector": "a[href*=\"::\"] img",
+      "product_price_selector": "div.listingbox-price",
+      "active": true,
+      "included_vat": 19
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "PLC-Shop by MERENIX",
+      "base_url": "https://www.plc-shop.eu/",
+      "search_string": "website/search?search=%s",
+      "currency": "EUR",
+      "product_name_selector": ".h6.fw-bold",
+      "product_url_selector": "a.dropdown-item.p-2.text-wrap[href*=\"/shop/\"]",
+      "product_picture_url_selector": ".o_image_64_contain",
+      "product_price_selector": ".oe_currency_value",
+      "active": true,
+      "included_vat": 19
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "EIBMARKT",
+      "base_url": "https://www.eibmarkt.com/",
+      "search_string": "",
+      "currency": "EUR",
+      "product_name_selector": "a.productlink",
+      "product_url_selector": "a.productlink",
+      "product_picture_url_selector": "img.productimage",
+      "product_price_selector": "span.price a",
+      "active": false,
+      "included_vat": 0
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "Seneca",
+      "base_url": "https://www.seneca.it/",
+      "search_string": "en/prodsearch/?q=%s",
+      "currency": "EUR",
+      "product_name_selector": ".lstProdName",
+      "product_url_selector": "#collapse2 a[href^=\"/en/\"]",
+      "product_picture_url_selector": "#collapse2 .lstResProd",
+      "product_price_selector": "",
+      "active": false,
+      "included_vat": 22
+    }
   }
 ]
