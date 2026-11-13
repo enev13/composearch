@@ -289,7 +289,7 @@
     "fields": {
       "name": "Conrad Electronic",
       "base_url": "https://www.conrad.com/",
-      "search_string": "en/search.html?q=%s",
+      "search_string": "",
       "currency": "EUR",
       "product_name_selector": "h2",
       "product_url_selector": "h2 a",
@@ -310,7 +310,7 @@
       "product_url_selector": ".product-item-link",
       "product_picture_url_selector": ".product-image-photo",
       "product_price_selector": ".price",
-      "active": false,
+      "active": true,
       "included_vat": 19
     }
   },
@@ -351,11 +351,11 @@
       "base_url": "https://www.eibmarkt.com/",
       "search_string": "",
       "currency": "EUR",
-      "product_name_selector": "a.productlink",
-      "product_url_selector": "a.productlink",
-      "product_picture_url_selector": "img.productimage",
-      "product_price_selector": "span.price a",
-      "active": false,
+      "product_name_selector": "a[href*='/products/']",
+      "product_url_selector": "a[href*='/products/']",
+      "product_picture_url_selector": "img",
+      "product_price_selector": ".price",
+      "active": true,
       "included_vat": 0
     }
   },
@@ -370,8 +370,38 @@
       "product_url_selector": "#collapse2 a[href^=\"/en/\"]",
       "product_picture_url_selector": "#collapse2 .lstResProd",
       "product_price_selector": "",
-      "active": false,
+      "active": true,
       "included_vat": 22
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "Schukat electronic",
+      "base_url": "https://shop.schukat.com/de/de/EUR/",
+      "search_string": "search/%s",
+      "currency": "EUR",
+      "product_name_selector": ".custom-product-list-mobile-item__product-summary",
+      "product_url_selector": ".custom-product-list-mobile-item h3 a",
+      "product_picture_url_selector": ".custom-product-list-mobile-item img",
+      "product_price_selector": ".custom-product-list-mobile-item__line-data--price",
+      "active": true,
+      "included_vat": 19
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "Sinelec Technologies",
+      "base_url": "https://www.sinelec-tech.com/",
+      "search_string": "website/products?q=%s",
+      "currency": "EUR",
+      "product_name_selector": ".pcard-name",
+      "product_url_selector": "",
+      "product_picture_url_selector": ".pcard-img",
+      "product_price_selector": ".price-main",
+      "active": false,
+      "included_vat": 19
     }
   }
 ]
