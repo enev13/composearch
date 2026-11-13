@@ -107,21 +107,6 @@
   {
     "model": "search.DistributorSourceModel",
     "fields": {
-      "name": "Distrelec International",
-      "base_url": "https://www.distrelec.biz/",
-      "search_string": "search?q=%s&sid=",
-      "currency": "EUR",
-      "product_name_selector": "body > div.md-system > div > section.product-section > div > div > div > div.row > div.col-12.print-product-name > div.mod.mod-product-title > h1",
-      "product_url_selector": "head > link:nth-child(30)",
-      "product_picture_url_selector": "#zoom-item-v > figure > img",
-      "product_price_selector": "body > div.md-system > div > section.product-section > div > div > div > div.row > div:nth-child(7) > div:nth-child(1) > div > div > div.product-right-info__bottom > div.mod.mod-scaled-prices.skin-scaled-prices-single > div > div.prices-container > div:nth-child(2) > div > h2",
-      "active": false,
-      "included_vat": 0
-    }
-  },
-  {
-    "model": "search.DistributorSourceModel",
-    "fields": {
       "name": "RS Components - BG",
       "base_url": "https://bg.rsdelivers.com/",
       "search_string": "productlist/search?query=%s",
@@ -192,6 +177,111 @@
       "product_picture_url_selector": "img.product-image",
       "product_price_selector": "span.product-price",
       "active": false
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "Farnell Bulgaria",
+      "base_url": "https://bg.farnell.com/",
+      "search_string": "webapp/wcs/stores/servlet/Search?st=%s",
+      "currency": "EUR",
+      "product_name_selector": "[class*=\"ManNumberLink\"]",
+      "product_url_selector": "[class*=\"ManNumberLink\"]",
+      "product_picture_url_selector": "img[class*=\"Image\"]",
+      "product_price_selector": "[class*=\"TotalPriceValue\"]",
+      "active": true,
+      "included_vat": 0
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "SOS electronic",
+      "base_url": "https://www.soselectronic.com/",
+      "search_string": "en-bg/search/products?query=%s",
+      "currency": "EUR",
+      "product_name_selector": ".sos-products__item-header h2",
+      "product_url_selector": ".sos-products__item-header a",
+      "product_picture_url_selector": ".sos-products__item-image-link img",
+      "product_price_selector": ".sos-products__item-pricelist-row-price",
+      "active": true,
+      "included_vat": 0
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "DigiKey Bulgaria",
+      "base_url": "https://www.digikey.bg/",
+      "search_string": "en/products?keywords=%s",
+      "currency": "EUR",
+      "product_name_selector": "[data-testid=\"data-table-product-number\"]",
+      "product_url_selector": "[data-testid=\"data-table-product-number\"]",
+      "product_picture_url_selector": "[data-testid=\"data-table-product-image\"]",
+      "product_price_selector": "[data-testid=\"qty-price\"]",
+      "active": true,
+      "included_vat": 0
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "Mouser Bulgaria",
+      "base_url": "https://www.mouser.bg/",
+      "search_string": "en/c/?q=%s",
+      "currency": "EUR",
+      "product_name_selector": ".mfr-part-num a",
+      "product_url_selector": ".mfr-part-num a",
+      "product_picture_url_selector": ".refine-prod-img",
+      "product_price_selector": ".PriceBreakPrice",
+      "active": true,
+      "included_vat": 0
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "Bürklin Elektronik",
+      "base_url": "https://www.buerklin.com/",
+      "search_string": "en/search/?q=%s",
+      "currency": "EUR",
+      "product_name_selector": "a.product-link",
+      "product_url_selector": "a.product-link",
+      "product_picture_url_selector": ".product-list-image img",
+      "product_price_selector": "span.price",
+      "active": true,
+      "included_vat": 0
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "Comet Electronics",
+      "base_url": "https://store.comet.bg/",
+      "search_string": "Catalogue/Search/?keywords=%s",
+      "currency": "EUR",
+      "product_name_selector": "td.p-name a",
+      "product_url_selector": "td.p-name a",
+      "product_picture_url_selector": "td.p-image img",
+      "product_price_selector": "td.price",
+      "active": true,
+      "included_vat": 0
+    }
+  },
+  {
+    "model": "search.DistributorSourceModel",
+    "fields": {
+      "name": "Vikiwat",
+      "base_url": "https://vikiwat.com/",
+      "search_string": "search.html?phrase=%s",
+      "currency": "EUR",
+      "product_name_selector": "a.product-name",
+      "product_url_selector": "a.product-name",
+      "product_picture_url_selector": ".image img",
+      "product_price_selector": ".final-price .price-value",
+      "active": true,
+      "included_vat": 20
     }
   }
 ]
