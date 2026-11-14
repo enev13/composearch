@@ -4,10 +4,10 @@ from collections.abc import AsyncIterator
 from urllib.parse import quote_plus
 
 from asgiref.sync import sync_to_async
-from playwright.async_api import async_playwright
 
 from search.models import DistributorSourceModel
-from search.services.fetcher import fetch_result
+from search.services.browser_service import browser_manager
+from search.services.fetcher import BROWSER_TIMEOUT, fetch_result
 from search.services.product import Product
 
 log = logging.getLogger(__name__)
@@ -23,11 +23,21 @@ async def perform_search(query: str) -> list[Product]:
     distributors = await get_active_distributors()
     query = quote_plus(query.encode("utf-8").strip().lower())
 
-    async with async_playwright() as playwright:
-        browser = await playwright.chromium.launch(args=["--disable-dev-shm-usage"])
-        tasks = [fetch_result(browser, distributor, query) for distributor in distributors]
+    if not distributors:
+        return []
+
+    try:
+        context = await browser_manager.new_context(default_timeout_ms=BROWSER_TIMEOUT)
+    except Exception:
+        log.exception("Browser unavailable; aborting search.")
+        return []
+
+    try:
+        tasks = [fetch_result(context, distributor, query) for distributor in distributors]
         results = await asyncio.gather(*tasks)
-        await browser.close()
+    finally:
+        await context.close()
+        browser_manager.touch()
 
     # Remove None values and sort by price
     results = filter(None, results)
@@ -48,19 +58,24 @@ async def stream_search(query: str) -> AsyncIterator[Product]:
     if not distributors:
         return
 
-    async with async_playwright() as playwright:
-        browser = await playwright.chromium.launch(args=["--disable-dev-shm-usage"])
-        try:
-            tasks = [
-                fetch_result(browser, distributor, query)
-                for distributor in distributors
-            ]
-            for completed in asyncio.as_completed(tasks):
-                product = await completed
-                if product is not None:
-                    yield product
-        finally:
-            await browser.close()
+    try:
+        context = await browser_manager.new_context(default_timeout_ms=BROWSER_TIMEOUT)
+    except Exception:
+        log.exception("Browser unavailable; aborting stream.")
+        return
+
+    try:
+        tasks = [
+            fetch_result(context, distributor, query)
+            for distributor in distributors
+        ]
+        for completed in asyncio.as_completed(tasks):
+            product = await completed
+            if product is not None:
+                yield product
+    finally:
+        await context.close()
+        browser_manager.touch()
 
 
 @sync_to_async

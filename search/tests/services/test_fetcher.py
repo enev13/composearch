@@ -5,7 +5,7 @@ from django.test import TestCase
 from search.models import DistributorSourceModel
 from search.services.fetcher import fetch_result
 
-from ..fixtures.playwright import CONTENT_TIME, WAIT_FOR_TIME, MockBrowser
+from ..fixtures.playwright import CONTENT_TIME, WAIT_FOR_TIME, MockContext
 from ..fixtures.products import sample_product, sample_product_2
 
 
@@ -23,28 +23,28 @@ class TestFetchResult(TestCase):
             product_price_selector="div > span",
             active=True,
         )
-        self.browser = MockBrowser()
+        self.context = MockContext()
 
     async def test_fetch_result(self):
-        product = await fetch_result(self.browser, self.distributor, "test")
+        product = await fetch_result(self.context, self.distributor, "test")
         self.assertEqual(product, sample_product)
 
     async def test_fetch_result_no_query(self):
-        product = await fetch_result(self.browser, self.distributor, "")
+        product = await fetch_result(self.context, self.distributor, "")
         self.assertIsNone(product)
 
     async def test_fetch_result_not_from_cache(self):
         start_time = time.time()
-        product = await fetch_result(self.browser, self.distributor, "test2")
+        product = await fetch_result(self.context, self.distributor, "test2")
         end_time = time.time()
         self.assertEqual(product, sample_product_2)
         self.assertGreaterEqual(end_time - start_time, CONTENT_TIME + WAIT_FOR_TIME)
 
     async def test_fetch_result_from_cache(self):
-        product = await fetch_result(self.browser, self.distributor, "test")
+        product = await fetch_result(self.context, self.distributor, "test")
         # Second time should be faster
         start_time = time.time()
-        product = await fetch_result(self.browser, self.distributor, "test")
+        product = await fetch_result(self.context, self.distributor, "test")
         end_time = time.time()
         self.assertEqual(product, sample_product)
         self.assertLess(end_time - start_time, CONTENT_TIME + WAIT_FOR_TIME)

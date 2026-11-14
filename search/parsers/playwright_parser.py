@@ -6,6 +6,11 @@ from search.parsers.base import AbstractParser
 
 
 class PlaywrightParser(AbstractParser):
+    """
+    Experimental POC — not used by the production search pipeline; manages
+    its own browser, independent of `search.services.browser_service`.
+    """
+
     _name = "playwright"
 
     async def __aenter__(self) -> Self:
