@@ -78,7 +78,7 @@ You can see it up and running, deployed on Railway: https://composearch.up.railw
 
 ##### Prerequisites
 
-- Python 3.11+
+- Python 3.11.5+
 - Poetry
 - Redis (optional)
 - PostgreSQL (optional)
