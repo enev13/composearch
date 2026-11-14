@@ -11,7 +11,8 @@
       "product_picture_url_selector": "img[data-testid=\"search-listing-tile-article-image\"]",
       "product_price_selector": "li[data-testid=\"price-box-article-price-catalog\"]",
       "active": true,
-      "included_vat": 19
+      "included_vat": 19,
+      "probe_query": "relais"
     }
   },
   {
@@ -26,7 +27,8 @@
       "product_picture_url_selector": "#product_listing > table > tbody > tr > td.product_image > a > img",
       "product_price_selector": "#product_listing > table > tbody > tr > td.product_price > div.listing_price_single.price",
       "active": false,
-      "included_vat": 19
+      "included_vat": 19,
+      "probe_query": "relay"
     }
   },
   {
@@ -41,7 +43,8 @@
       "product_picture_url_selector": "img.product-image",
       "product_price_selector": "span.product-price",
       "active": true,
-      "included_vat": 19
+      "included_vat": 19,
+      "probe_query": "relais"
     }
   },
   {
@@ -56,7 +59,8 @@
       "product_picture_url_selector": "body > div.page-wrap > section > div > div.content--wrapper > div > div.search--results > div > div.listing--container > div.listing > div:nth-child(1) > div > div.product--info > a.product--image > span > span > noscript > img",
       "product_price_selector": "body > div.page-wrap > section > div > div.content--wrapper > div > div.search--results > div > div.listing--container > div.listing > div:nth-child(1) > div > div.product--info > div.product--price-info > div.product--price > span",
       "active": true,
-      "included_vat": 0
+      "included_vat": 0,
+      "probe_query": "Siemens"
     }
   },
   {
@@ -71,7 +75,8 @@
       "product_picture_url_selector": "#product-row-0 > div.tradeproduct-image > img",
       "product_price_selector": "#product-row-0 > div.tradeproduct-info > div.tradeproduct-description.click > div.tradeproduct-price-search > strong > span:nth-child(2)",
       "active": true,
-      "included_vat": 0
+      "included_vat": 0,
+      "probe_query": "Siemens"
     }
   },
   {
@@ -86,7 +91,8 @@
       "product_picture_url_selector": "div.article-listitem img.img-classic",
       "product_price_selector": "div.article-listitem div.price",
       "active": true,
-      "included_vat": 0
+      "included_vat": 0,
+      "probe_query": "relay"
     }
   },
   {
@@ -101,7 +107,8 @@
       "product_picture_url_selector": "td.img > a > img",
       "product_price_selector": "td.price > div",
       "active": true,
-      "included_vat": 0
+      "included_vat": 0,
+      "probe_query": "relais"
     }
   },
   {
@@ -116,7 +123,8 @@
       "product_picture_url_selector": "img.thumbnail-image-component-module-scss-module__ukhElq__thumb",
       "product_price_selector": "p.list-product-card-component-module-scss-module__62SDtW__unit-price",
       "active": true,
-      "included_vat": 0
+      "included_vat": 0,
+      "probe_query": "relay"
     }
   },
   {
@@ -131,7 +139,8 @@
       "product_picture_url_selector": "a.t_product_image img",
       "product_price_selector": "span.t_product_price_table_1_price",
       "active": true,
-      "included_vat": 0
+      "included_vat": 0,
+      "probe_query": "relay"
     }
   },
   {
@@ -146,7 +155,8 @@
       "product_picture_url_selector": "div.al_gallery_article_logos > div.al_artlogo > a > picture > img",
       "product_price_selector": "div.al_artlinks_price > div.productPriceArea > p.productPrice",
       "active": true,
-      "included_vat": 19
+      "included_vat": 19,
+      "probe_query": "relais"
     }
   },
   {
@@ -161,7 +171,8 @@
       "product_url_selector": "a.product-title",
       "product_picture_url_selector": "a.image img",
       "product_price_selector": "div.product-order-box strong.price-excl.price-focus",
-      "active": true
+      "active": true,
+      "probe_query": "relais"
     }
   },
   {
@@ -176,7 +187,8 @@
       "product_url_selector": "a.product-name",
       "product_picture_url_selector": "img.product-image",
       "product_price_selector": "span.product-price",
-      "active": false
+      "active": false,
+      "probe_query": "relais"
     }
   },
   {
@@ -191,7 +203,8 @@
       "product_picture_url_selector": "img[class*=\"Image\"]",
       "product_price_selector": "[class*=\"TotalPriceValue\"]",
       "active": true,
-      "included_vat": 0
+      "included_vat": 0,
+      "probe_query": "relay"
     }
   },
   {
@@ -206,7 +219,8 @@
       "product_picture_url_selector": ".sos-products__item-image-link img",
       "product_price_selector": ".sos-products__item-pricelist-row-price",
       "active": true,
-      "included_vat": 0
+      "included_vat": 0,
+      "probe_query": "relay"
     }
   },
   {
@@ -221,7 +235,8 @@
       "product_picture_url_selector": "[data-testid=\"data-table-product-image\"]",
       "product_price_selector": "[data-testid=\"qty-price\"]",
       "active": true,
-      "included_vat": 0
+      "included_vat": 0,
+      "probe_query": "relay"
     }
   },
   {
@@ -236,7 +251,8 @@
       "product_picture_url_selector": ".refine-prod-img",
       "product_price_selector": ".PriceBreakPrice",
       "active": true,
-      "included_vat": 0
+      "included_vat": 0,
+      "probe_query": "relay"
     }
   },
   {
@@ -251,7 +267,8 @@
       "product_picture_url_selector": ".product-list-image img",
       "product_price_selector": "span.price",
       "active": true,
-      "included_vat": 0
+      "included_vat": 0,
+      "probe_query": "relay"
     }
   },
   {
@@ -266,7 +283,8 @@
       "product_picture_url_selector": "td.p-image img",
       "product_price_selector": "td.price",
       "active": true,
-      "included_vat": 0
+      "included_vat": 0,
+      "probe_query": "relay"
     }
   },
   {
@@ -281,7 +299,8 @@
       "product_picture_url_selector": ".image img",
       "product_price_selector": ".final-price .price-value",
       "active": true,
-      "included_vat": 20
+      "included_vat": 20,
+      "probe_query": "relay"
     }
   },
   {
@@ -296,7 +315,8 @@
       "product_picture_url_selector": "div[data-purpose=\"picture\"] img",
       "product_price_selector": "span[data-purpose=\"current-price\"]",
       "active": false,
-      "included_vat": 19
+      "included_vat": 19,
+      "probe_query": null
     }
   },
   {
@@ -311,7 +331,8 @@
       "product_picture_url_selector": ".product-image-photo",
       "product_price_selector": ".price",
       "active": true,
-      "included_vat": 19
+      "included_vat": 19,
+      "probe_query": "relais"
     }
   },
   {
@@ -326,7 +347,8 @@
       "product_picture_url_selector": "a[href*=\"::\"] img",
       "product_price_selector": "div.listingbox-price",
       "active": true,
-      "included_vat": 19
+      "included_vat": 19,
+      "probe_query": "relais"
     }
   },
   {
@@ -341,7 +363,8 @@
       "product_picture_url_selector": ".o_image_64_contain",
       "product_price_selector": ".oe_currency_value",
       "active": true,
-      "included_vat": 19
+      "included_vat": 19,
+      "probe_query": "Siemens"
     }
   },
   {
@@ -356,7 +379,8 @@
       "product_picture_url_selector": "img",
       "product_price_selector": ".price",
       "active": true,
-      "included_vat": 0
+      "included_vat": 0,
+      "probe_query": "aktor"
     }
   },
   {
@@ -371,7 +395,8 @@
       "product_picture_url_selector": "#collapse2 .lstResProd",
       "product_price_selector": "",
       "active": true,
-      "included_vat": 22
+      "included_vat": 22,
+      "probe_query": "relay"
     }
   },
   {
@@ -386,7 +411,8 @@
       "product_picture_url_selector": ".custom-product-list-mobile-item img",
       "product_price_selector": ".custom-product-list-mobile-item__line-data--price",
       "active": true,
-      "included_vat": 19
+      "included_vat": 19,
+      "probe_query": "relais"
     }
   },
   {
@@ -401,7 +427,8 @@
       "product_picture_url_selector": ".pcard-img",
       "product_price_selector": ".price-main",
       "active": false,
-      "included_vat": 19
+      "included_vat": 19,
+      "probe_query": "relay"
     }
   }
 ]
