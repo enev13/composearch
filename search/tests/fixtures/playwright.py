@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any
+from typing import Any, Self
 
 from playwright.async_api import Browser
 
@@ -58,39 +58,64 @@ class MockPage:
     def locator(self, *args) -> MockLocator:
         return MockLocator()
 
+    async def close(self, *args) -> None:
+        return
+
 
 class MockContext:
+    def __init__(self) -> None:
+        self.default_timeout = None
+
     async def new_page(self, *args) -> MockPage:
         return MockPage()
 
-    def set_default_timeout(self, *args) -> None:
-        return
+    def set_default_timeout(self, timeout) -> None:
+        self.default_timeout = timeout
 
     async def close(self, *args) -> None:
         return
 
 
 class MockBrowser(Browser):
-    def __init__(self) -> None:
-        pass
+    def __init__(self, connected: bool = True) -> None:
+        self.connected = connected
+
+    def is_connected(self) -> bool:
+        return self.connected
 
     async def new_context(self, *args) -> MockContext:
         return MockContext()
 
     async def close(self, *args) -> None:
-        return
+        self.connected = False
 
 
 class MockChromium:
-    async def launch(self, *args) -> MockBrowser:
+    def __init__(self, launch_error: Exception | None = None) -> None:
+        self.launch_args = None
+        self.launches = 0
+        self.launch_error = launch_error
+
+    async def launch(self, *args, **kwargs) -> MockBrowser:
+        self.launches += 1
+        self.launch_args = kwargs.get("args")
+        if self.launch_error is not None:
+            raise self.launch_error
         return MockBrowser()
 
 
 class MockPlaywright:
-    async def __aenter__(self) -> MockBrowser:
-        return MockBrowser()
+    def __init__(self) -> None:
+        self.chromium = MockChromium()
+
+    async def start(self) -> Self:
+        return self
+
+    async def stop(self) -> None:
+        return
+
+    async def __aenter__(self) -> Self:
+        return self
 
     async def __aexit__(self, *args) -> None:
         return
-
-    chromium = MockChromium()
