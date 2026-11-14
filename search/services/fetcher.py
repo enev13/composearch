@@ -1,12 +1,15 @@
 import asyncio
 import logging
+import time
 from urllib.parse import urljoin
 
 from decouple import config
 from django.core.cache import cache
 from playwright.async_api import BrowserContext
+from playwright.async_api import TimeoutError as PlaywrightTimeoutError
 
 from search.models import DistributorSourceModel
+from search.services.monitoring import record_outcome
 from search.services.product import Product
 
 CACHE_TIMEOUT: float = config("CACHE_TIMEOUT", cast=float, default=60 * 60)
@@ -34,6 +37,79 @@ def _get_fetch_semaphore() -> asyncio.Semaphore:
     return _fetch_semaphore
 
 
+async def _fetch_and_parse(
+    context: BrowserContext,
+    distributor: DistributorSourceModel,
+    url: str,
+    semaphore: asyncio.Semaphore | None = None,
+) -> tuple[Product | None, str, float, str]:
+    """
+    Takes a BrowserContext, a DistributorSourceModel, a search result url and
+    an optional semaphore capping concurrent fetches (the process-wide one
+    when omitted).
+
+    Fetches the url and parses the HTML into a Product.
+
+    Returns a (product, html_content, response_ms, reason) tuple, where
+    reason is "" on success and otherwise a slug naming the failing stage:
+    "timeout" (navigation timed out), "navigation_error" (navigation
+    failed), "selector_timeout" (price selector never appeared) or
+    "parse_error" (page fetched but no product parsed). A failure to open a
+    page raises and is not recorded: a broken browser is not a distributor
+    health problem.
+    """
+    if semaphore is None:
+        semaphore = _get_fetch_semaphore()
+    price_selector = distributor.product_price_selector
+    html_content = ""
+    # A completed fetch that produces nothing usable is a parse error unless
+    # a stage below assigns a more specific reason.
+    reason = "parse_error"
+    start = end = time.perf_counter()
+    async with semaphore:
+        page = await context.new_page()
+        try:
+            start = time.perf_counter()
+            try:
+                await page.goto(url)
+            except PlaywrightTimeoutError:
+                reason = "timeout"
+                raise
+            except Exception:
+                reason = "navigation_error"
+                raise
+            try:
+                await page.locator(price_selector).first.wait_for(timeout=BROWSER_TIMEOUT / 2)
+            except Exception:
+                reason = "selector_timeout"
+                raise
+            try:
+                html_content = await page.content()
+            except Exception:
+                reason = "navigation_error"
+                raise
+            end = time.perf_counter()
+            log.debug(f"Fetched url: {url}, length: {len(html_content)}")
+        except Exception:
+            end = time.perf_counter()
+            log.debug(f"Error fetching url: {url}", exc_info=True)
+        finally:
+            await page.close()
+
+    # Parses outside the semaphore so the concurrency cap only covers
+    # browser work.
+    product = None
+    if html_content:
+        product = await Product.from_html(distributor=distributor, html_content=html_content)
+        if product is None:
+            reason = "parse_error"
+    if product is not None:
+        reason = ""
+
+    response_ms = (end - start) * 1000
+    return product, html_content, response_ms, reason
+
+
 async def fetch_result(
     context: BrowserContext, distributor: DistributorSourceModel, query: str
 ) -> Product | None:
@@ -48,36 +124,22 @@ async def fetch_result(
     If an exception occurs, returns None.
     """
     url = urljoin(distributor.base_url, distributor.search_string.replace("%s", query))
-    price_selector = distributor.product_price_selector
 
     # Checks if the url is in the cache.
     cached_content = cache.get(url, None)
 
-    # If the url is in the cache, parses the result.
+    # If the url is in the cache, parses the result. Cached results are not
+    # recorded, as they say nothing about current distributor health.
     if cached_content:
         log.debug(f"Using cached url: {url}, length: {len(cached_content)}")
         return await Product.from_html(distributor=distributor, html_content=cached_content)
 
-    # If the url is not in the cache, fetches the url under the
-    # process-wide concurrency cap.
-    html_content = ""
-    async with _get_fetch_semaphore():
-        page = await context.new_page()
-        try:
-            await page.goto(url)
-            price_loaded = page.locator(price_selector).first
-            await price_loaded.wait_for(timeout=BROWSER_TIMEOUT / 2)
-            html_content = await page.content()
-            log.debug(f"Fetched url: {url}, length: {len(html_content)}")
-        except Exception:
-            log.debug(f"Error fetching url: {url}", exc_info=True)
-        finally:
-            await page.close()
+    # If the url is not in the cache, fetches the url.
+    product, html_content, response_ms, reason = await _fetch_and_parse(context, distributor, url)
 
-    # If the url is fetched successfully, parses the result into a Product object.
-    product = None
-    if html_content:
-        product = await Product.from_html(distributor=distributor, html_content=html_content)
+    # Records the outcome for distributor health tracking. Recording never
+    # breaks a search.
+    await record_outcome(distributor, product, response_ms, reason)
 
     # If the product could be parsed, stores the result in the cache,
     # otherwise stores the result in the cache for a much shorter time.
