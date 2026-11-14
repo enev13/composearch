@@ -14,7 +14,7 @@ greenlet==3.5.6 ; python_full_version >= "3.11.5" and python_full_version < "4.0
 gunicorn==26.2.0 ; python_full_version >= "3.11.5" and python_full_version < "4.0.0"
 h11==0.16.0 ; python_full_version >= "3.11.5" and python_full_version < "4.0.0"
 kombu==5.6.2 ; python_full_version >= "3.11.5" and python_full_version < "4.0.0"
-packaging==23.1 ; python_full_version >= "3.11.5" and python_full_version < "4.0.0"
+packaging==26.3 ; python_full_version >= "3.11.5" and python_full_version < "4.0.0"
 playwright==1.64.1 ; python_full_version >= "3.11.5" and python_full_version < "4.0.0"
 prompt-toolkit==3.0.53 ; python_full_version >= "3.11.5" and python_full_version < "4.0.0"
 psycopg-binary==3.3.6 ; implementation_name != "pypy" and python_full_version >= "3.11.5" and python_full_version < "4.0.0"
