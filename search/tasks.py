@@ -1,7 +1,7 @@
 from celery import shared_task
 from django.core.cache import cache
 
-from search.stats import (
+from search.services.stats import (
     TOP_SEARCHES_CACHE_KEY,
     TOP_SEARCHES_LIMIT,
     get_top_queries,
@@ -9,7 +9,7 @@ from search.stats import (
 
 
 @shared_task
-def update_top_search_queries():
+def update_top_search_queries() -> list[dict[str, str | int]]:
     top = get_top_queries(TOP_SEARCHES_LIMIT)
     cache.set(TOP_SEARCHES_CACHE_KEY, top, timeout=None)
     return top

@@ -7,11 +7,11 @@ from urllib.parse import urljoin
 
 from django.templatetags.static import static
 
-from search.helpers import to_decimal
 from search.models import DistributorSourceModel
-from search.parser import Parser
+from search.parsers import Parser
+from search.utils.helpers import to_decimal
 
-DEFAULT_PICTURE = static("images/device.png")
+DEFAULT_PICTURE: str = static("images/device.png")
 log = logging.getLogger(__name__)
 
 
@@ -28,7 +28,7 @@ class Product:
     shop_icon: str
     picture_url: str
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, str]:
         """
         Returns a JSON-safe dict representation of the product.
         """
@@ -45,7 +45,7 @@ class Product:
 
     @staticmethod
     async def from_html(
-        distributor: DistributorSourceModel, html_content: str, parser="bs4"
+        distributor: DistributorSourceModel | None, html_content: str, parser: str = "bs4"
     ) -> Product | None:
         """
         Takes a DistributorSourceModel and a html string.
@@ -56,9 +56,9 @@ class Product:
         if not distributor or not html_content:
             return None
 
-        async with Parser(parser=parser) as parser:
-            await parser.load_content(html_content)
-            product_name = await parser.select_element(
+        async with Parser(parser=parser) as p:
+            await p.load_content(html_content)
+            product_name = await p.select_element(
                 selector=distributor.product_name_selector, type="text"
             )
             if product_name:
@@ -66,24 +66,24 @@ class Product:
                     currency = distributor.currency
                     vat = distributor.included_vat
 
-                    price = await parser.select_element(
+                    price = await p.select_element(
                         selector=distributor.product_price_selector, type="text"
                     )
                     price = to_decimal(price)
                     price /= 1 + Decimal(vat / 100)
                     price = round(price, 2)
 
-                    url = await parser.select_element(selector=distributor.product_url_selector, type="href")
+                    url = await p.select_element(selector=distributor.product_url_selector, type="href")
                     url = url.replace(distributor.base_url, "")
-                    url = url[1:] if url.startswith("/") else url
+                    url = url.removeprefix("/")
                     url = urljoin(distributor.base_url, url)
 
-                    picture_url = await parser.select_element(
+                    picture_url = await p.select_element(
                         selector=distributor.product_picture_url_selector, type="src"
                     )
                     if picture_url:
                         picture_url = picture_url.replace(distributor.base_url, "")
-                        picture_url = picture_url[1:] if picture_url.startswith("/") else picture_url
+                        picture_url = picture_url.removeprefix("/")
                         picture_url = urljoin(distributor.base_url, picture_url)
                     else:
                         picture_url = DEFAULT_PICTURE
@@ -99,7 +99,7 @@ class Product:
                     )
                     return product
                 except Exception as ex:
-                    log.debug(f"ERROR: {distributor.name}: {ex}")
+                    log.debug(f"ERROR: {distributor.name}: {ex}", exc_info=True)
                     return None
             else:
                 log.debug(f"Product name not found for {distributor.name}")

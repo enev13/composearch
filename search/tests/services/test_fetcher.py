@@ -3,9 +3,10 @@ import time
 from django.test import TestCase
 
 from search.models import DistributorSourceModel
-from search.search import fetch_result
-from search.tests.fixtures.playwright import CONTENT_TIME, WAIT_FOR_TIME, MockBrowser
-from search.tests.fixtures.products import sample_product, sample_product_2
+from search.services.fetcher import fetch_result
+
+from ..fixtures.playwright import CONTENT_TIME, WAIT_FOR_TIME, MockBrowser
+from ..fixtures.products import sample_product, sample_product_2
 
 
 class TestFetchResult(TestCase):

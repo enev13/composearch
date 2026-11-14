@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 from search.models import DistributorSourceModel
-from search.search import get_active_distributors
+from search.services.search_service import get_active_distributors
 
 
 class TestGetActiveDistributors(TestCase):

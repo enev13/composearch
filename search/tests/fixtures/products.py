@@ -1,6 +1,6 @@
 from decimal import Decimal
-from search.product import Product
 
+from search.services.product import Product
 
 sample_product = Product(
     name="Test product",

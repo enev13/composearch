@@ -1,7 +1,7 @@
 from decimal import Decimal
 from unittest import TestCase
 
-from search.helpers import to_decimal
+from search.utils.helpers import to_decimal
 
 
 class TestToDecimal(TestCase):

@@ -23,12 +23,14 @@ You can see it up and running, deployed on Railway: https://composearch.up.railw
 
 | Name | Stmts | Miss | Cover |
 |------|-------|------|-------|
-| composearch\\_\_init\_\_.py | 0 | 0 | 100% |
-| composearch\settings.py | 35 | 4 | 89% |
+| composearch\\_\_init\_\_.py | 2 | 0 | 100% |
+| composearch\celery.py | 7 | 0 | 100% |
+| composearch\settings.py | 38 | 4 | 89% |
+| composearch\urls.py | 3 | 0 | 100% |
 | search\\_\_init\_\_.py | 0 | 0 | 100% |
-| search\admin.py | 9 | 2 | 78% |
+| search\admin.py | 11 | 2 | 82% |
 | search\apps.py | 4 | 0 | 100% |
-| search\helpers.py | 10 | 0 | 100% |
+| search\consumers.py | 23 | 0 | 100% |
 | search\migrations\0001_initial.py | 5 | 0 | 100% |
 | search\migrations\0002_distributorsourcemodel_product_currency_selector.py | 4 | 0 | 100% |
 | search\migrations\0003_remove_distributorsourcemodel_product_currency_selector_and_more.py | 4 | 0 | 100% |
@@ -36,20 +38,41 @@ You can see it up and running, deployed on Railway: https://composearch.up.railw
 | search\migrations\0005_remove_distributorsourcemodel_including_vat_and_more.py | 4 | 0 | 100% |
 | search\migrations\\_\_init\_\_.py | 0 | 0 | 100% |
 | search\models.py | 14 | 0 | 100% |
-| search\parser.py | 88 | 8 | 91% |
-| search\product.py | 53 | 0 | 100% |
-| search\search.py | 54 | 0 | 100% |
+| search\parsers\\_\_init\_\_.py | 4 | 0 | 100% |
+| search\parsers\base.py | 40 | 8 | 80% |
+| search\parsers\bs4_parser.py | 27 | 0 | 100% |
+| search\parsers\playwright_parser.py | 31 | 2 | 94% |
+| search\services\\_\_init\_\_.py | 5 | 0 | 100% |
+| search\services\fetcher.py | 38 | 0 | 100% |
+| search\services\product.py | 55 | 0 | 100% |
+| search\services\search_service.py | 38 | 0 | 100% |
+| search\services\stats.py | 40 | 10 | 75% |
+| search\tasks.py | 8 | 0 | 100% |
 | search\tests\\_\_init\_\_.py | 0 | 0 | 100% |
 | search\tests\fixtures\playwright.py | 47 | 4 | 91% |
 | search\tests\fixtures\products.py | 5 | 0 | 100% |
+| search\tests\parsers\\_\_init\_\_.py | 0 | 0 | 100% |
+| search\tests\parsers\test_base.py | 19 | 1 | 95% |
+| search\tests\parsers\test_bs4_parser.py | 35 | 0 | 100% |
+| search\tests\parsers\test_playwright_parser.py | 35 | 0 | 100% |
+| search\tests\services\\_\_init\_\_.py | 0 | 0 | 100% |
+| search\tests\services\test_fetcher.py | 29 | 0 | 100% |
+| search\tests\services\test_perform_search.py | 16 | 0 | 100% |
+| search\tests\services\test_product.py | 40 | 0 | 100% |
+| search\tests\services\test_stats.py | 49 | 0 | 100% |
+| search\tests\services\test_stream_search.py | 47 | 0 | 100% |
+| search\tests\test_consumers.py | 45 | 0 | 100% |
 | search\tests\test_distributors.py | 9 | 0 | 100% |
-| search\tests\test_fetch_result.py | 29 | 0 | 100% |
-| search\tests\test_helpers.py | 15 | 0 | 100% |
 | search\tests\test_models.py | 48 | 0 | 100% |
-| search\tests\test_parse_html.py | 40 | 0 | 100% |
-| search\tests\test_parser.py | 53 | 1 | 98% |
-| search\tests\test_perform_search.py | 16 | 0 | 100% |
-| **TOTAL** | **550** | **19** | **97%** |
+| search\tests\test_tasks.py | 15 | 0 | 100% |
+| search\tests\test_views.py | 42 | 0 | 100% |
+| search\tests\utils\\_\_init\_\_.py | 0 | 0 | 100% |
+| search\tests\utils\test_helpers.py | 15 | 0 | 100% |
+| search\urls.py | 3 | 0 | 100% |
+| search\utils\\_\_init\_\_.py | 2 | 0 | 100% |
+| search\utils\helpers.py | 10 | 0 | 100% |
+| search\views.py | 14 | 0 | 100% |
+| **TOTAL** | **934** | **31** | **97%** |
 
 ## Quick Start
 

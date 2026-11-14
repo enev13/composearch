@@ -1,4 +1,5 @@
 from django.test import TestCase
+
 from search.models import DistributorSourceModel
 
 

@@ -5,10 +5,10 @@ from asgiref.sync import sync_to_async
 from django.test import TestCase
 
 from search.models import DistributorSourceModel
-from search.product import Product
-from search.search import stream_search
+from search.services.product import Product
+from search.services.search_service import stream_search
 
-from .fixtures.products import sample_product, sample_product_2
+from ..fixtures.products import sample_product, sample_product_2
 
 
 async def mock_fetch_result(browser, distributor: DistributorSourceModel, query) -> Product:
@@ -71,8 +71,8 @@ class TestStreamSearch(TestCase):
             active=True,
         )
 
-    @patch("search.search.async_playwright", return_value=MockPlaywright())
-    @patch("search.search.fetch_result", side_effect=mock_fetch_result)
+    @patch("search.services.search_service.async_playwright", return_value=MockPlaywright())
+    @patch("search.services.search_service.fetch_result", side_effect=mock_fetch_result)
     async def test_stream_search_yields_in_completion_order(self, mock_fetch, mock_playwright):
         # SlowShop is submitted first but FastShop completes first, so the
         # generator must yield fastest-first (completion order).
@@ -84,7 +84,7 @@ class TestStreamSearch(TestCase):
             ["--disable-dev-shm-usage"],
         )
 
-    @patch("search.search.async_playwright", return_value=MockPlaywright())
+    @patch("search.services.search_service.async_playwright", return_value=MockPlaywright())
     async def test_stream_search_no_active_distributors(self, mock_playwright):
         await sync_to_async(DistributorSourceModel.objects.all().delete)()
         products = [product async for product in stream_search("test")]

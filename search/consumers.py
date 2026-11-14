@@ -4,7 +4,7 @@ from urllib.parse import parse_qs
 
 from channels.generic.http import AsyncHttpConsumer
 
-from search.search import stream_search
+from search.services.search_service import stream_search
 
 
 class SearchStreamConsumer(AsyncHttpConsumer):
@@ -12,7 +12,7 @@ class SearchStreamConsumer(AsyncHttpConsumer):
     Streams search results to the browser as Server-Sent Events.
     """
 
-    async def handle(self, body):
+    async def handle(self, body: bytes) -> None:
         query_string = self.scope["query_string"].decode("utf-8")
         query_params = parse_qs(query_string)
         query = query_params.get("query", [""])[0]
@@ -33,10 +33,10 @@ class SearchStreamConsumer(AsyncHttpConsumer):
         start_time = time.perf_counter()
         async for product in stream_search(query):
             data = json.dumps(product.to_dict())
-            frame = f"event: product\ndata: {data}\n\n".encode("utf-8")
+            frame = f"event: product\ndata: {data}\n\n".encode()
             await self.send_body(frame, more_body=True)
 
         elapsed = time.perf_counter() - start_time
         done_data = json.dumps({"seconds": round(elapsed, 2)})
-        done_frame = f"event: done\ndata: {done_data}\n\n".encode("utf-8")
+        done_frame = f"event: done\ndata: {done_data}\n\n".encode()
         await self.send_body(done_frame, more_body=False)

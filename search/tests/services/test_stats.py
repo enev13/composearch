@@ -2,8 +2,8 @@ from unittest.mock import MagicMock, patch
 
 from django.test import TestCase
 
-from search import stats
-from search.stats import (
+from search.services import stats
+from search.services.stats import (
     REDIS_SORTED_SET_KEY,
     TOP_SEARCHES_CACHE_KEY,
     get_top_queries,
@@ -13,7 +13,7 @@ from search.stats import (
 
 
 class TestRecordQuery(TestCase):
-    @patch("search.stats._get_redis")
+    @patch("search.services.stats._get_redis")
     def test_record_query_normalizes_and_calls_zincrby(self, mock_get_redis):
         mock_redis = MagicMock()
         mock_get_redis.return_value = mock_redis
@@ -25,7 +25,7 @@ class TestRecordQuery(TestCase):
             REDIS_SORTED_SET_KEY, 1, "hello world"
         )
 
-    @patch("search.stats._get_redis")
+    @patch("search.services.stats._get_redis")
     def test_record_query_empty_does_not_call_zincrby(self, mock_get_redis):
         mock_redis = MagicMock()
         mock_get_redis.return_value = mock_redis
@@ -38,7 +38,7 @@ class TestRecordQuery(TestCase):
 
 
 class TestGetTopQueries(TestCase):
-    @patch("search.stats._get_redis")
+    @patch("search.services.stats._get_redis")
     def test_get_top_queries_parses_zrevrange(self, mock_get_redis):
         mock_redis = MagicMock()
         mock_redis.zrevrange.return_value = [(b"foo", 5.0), (b"bar", 3.0)]
@@ -56,8 +56,8 @@ class TestGetTopQueries(TestCase):
 
 
 class TestGetTopSearchQueriesCached(TestCase):
-    @patch("search.stats.get_top_queries")
-    @patch("search.stats.cache")
+    @patch("search.services.stats.get_top_queries")
+    @patch("search.services.stats.cache")
     def test_returns_cached_without_recomputing(self, mock_cache, mock_get_top):
         mock_cache.get.return_value = [{"query": "cached", "count": 9}]
 
@@ -67,8 +67,8 @@ class TestGetTopSearchQueriesCached(TestCase):
         mock_cache.get.assert_called_once_with(TOP_SEARCHES_CACHE_KEY)
         mock_get_top.assert_not_called()
 
-    @patch("search.stats.get_top_queries")
-    @patch("search.stats.cache")
+    @patch("search.services.stats.get_top_queries")
+    @patch("search.services.stats.cache")
     def test_cache_miss_computes_and_sets(self, mock_cache, mock_get_top):
         mock_cache.get.return_value = None
         sample = [{"query": "a", "count": 1}]

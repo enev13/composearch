@@ -3,7 +3,7 @@ from unittest.mock import patch
 from django.test import TestCase
 
 from search import tasks
-from search.stats import TOP_SEARCHES_CACHE_KEY
+from search.services.stats import TOP_SEARCHES_CACHE_KEY
 from search.tasks import update_top_search_queries
 
 

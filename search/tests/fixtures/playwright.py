@@ -36,7 +36,6 @@ return_html = dict(
 class MockElement:
     async def wait_for(self, timeout=0) -> None:
         await asyncio.sleep(WAIT_FOR_TIME)
-        return
 
 
 class MockLocator:

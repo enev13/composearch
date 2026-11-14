@@ -4,10 +4,10 @@ from django.test import TestCase
 from playwright.async_api import BrowserContext
 
 from search.models import DistributorSourceModel
-from search.product import Product
-from search.search import perform_search
+from search.services.product import Product
+from search.services.search_service import perform_search
 
-from .fixtures.products import sample_product
+from ..fixtures.products import sample_product
 
 
 async def mock_fetch_result(browser: BrowserContext, distributor: DistributorSourceModel, query) -> Product:
@@ -29,7 +29,7 @@ class TestPerformSearch(TestCase):
             active=True,
         )
 
-    @patch("search.search.fetch_result", side_effect=mock_fetch_result)
+    @patch("search.services.search_service.fetch_result", side_effect=mock_fetch_result)
     async def test_perform_search(self, mock_fetch_result):
         products = await perform_search("test")
         self.assertEqual(products, [sample_product])
