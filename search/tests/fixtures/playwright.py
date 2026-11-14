@@ -119,3 +119,24 @@ class MockPlaywright:
 
     async def __aexit__(self, *args) -> None:
         return
+
+
+class MockBrowserManager:
+    """
+    Test double for search.services.browser_service.BrowserManager that
+    hands out mock contexts instead of launching a real browser.
+    """
+
+    def __init__(self, idle_timeout: float | None = None) -> None:
+        self.idle_timeout = idle_timeout
+        self.contexts = 0
+        self.shutdowns = 0
+
+    async def new_context(
+        self, default_timeout_ms: float | None = None
+    ) -> MockContext:
+        self.contexts += 1
+        return MockContext()
+
+    async def shutdown(self) -> None:
+        self.shutdowns += 1
