@@ -16,3 +16,12 @@ __pycache__/
 .venv/
 venv/
 .vscode/
+
+# Runtime artifacts & local data - never enter the image
+*.log
+db.sqlite3
+staticfiles/
+celerybeat-schedule.db
+certs/
+.coverage
+.pytest_cache/

@@ -30,6 +30,9 @@ PRODUCTION = config("PRODUCTION", default=False, cast=bool)
 ALLOWED_HOSTS = [config("ALLOWED_HOSTS")]
 if PRODUCTION:
     CSRF_TRUSTED_ORIGINS = [config("CSRF_TRUSTED_ORIGINS")]
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 # Application definition
 

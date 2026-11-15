@@ -35,6 +35,55 @@ class TestSearchViewRecordsQuery(TestCase):
         mock_record_query.assert_called_once_with("Hello World")
 
 
+class TestHealthView(TestCase):
+    def test_health_returns_ok(self):
+        response = self.client.get("/health/")
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["status"], "ok")
+        self.assertEqual(data["checks"]["database"], "ok")
+        self.assertEqual(data["checks"]["cache"], "ok")
+
+    def test_health_reports_browser_state(self):
+        response = self.client.get("/health/")
+
+        self.assertIn("browser", response.json()["checks"])
+
+    def test_health_browser_check_degrades_when_manager_missing(self):
+        with patch.dict("sys.modules", {"search.browser_manager": None}):
+            response = self.client.get("/health/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["checks"]["browser"], "unknown")
+
+    def test_health_is_never_cached(self):
+        response = self.client.get("/health/")
+
+        self.assertIn("no-store", response.headers["Cache-Control"])
+
+    def test_health_db_failure_returns_503(self):
+        with patch("search.views.connection") as mock_connection:
+            mock_connection.cursor.side_effect = Exception("db down")
+            response = self.client.get("/health/")
+
+        self.assertEqual(response.status_code, 503)
+        data = response.json()
+        self.assertEqual(data["status"], "unavailable")
+        self.assertEqual(data["checks"]["database"], "unavailable")
+        self.assertEqual(data["checks"]["cache"], "ok")
+
+    def test_health_cache_failure_returns_503(self):
+        with patch("search.views.cache.get", return_value=None):
+            response = self.client.get("/health/")
+
+        self.assertEqual(response.status_code, 503)
+        data = response.json()
+        self.assertEqual(data["status"], "unavailable")
+        self.assertEqual(data["checks"]["database"], "ok")
+        self.assertEqual(data["checks"]["cache"], "unavailable")
+
+
 class TestSearchFallbackView(TestCase):
     def setUp(self):
         self.async_client = AsyncClient()

@@ -146,6 +146,47 @@ python manage.py sync_distributors
 http://127.0.0.1:8000/
 ```
 
+## Deployment
+
+### Local Docker
+
+The full stack (web, nginx, PostgreSQL, Redis, Celery) runs with a single command:
+
+```
+cp .env.sample .env
+docker compose up --build
+```
+
+Then open http://localhost/ - nginx on host port 80 is the single published entry point and proxies to uvicorn, whose port 8000 stays internal to the compose network. The Django admin is at http://localhost/admin/, logging in with the `DJANGO_SUPERUSER_*` credentials from `.env` (the superuser is created automatically on startup when missing).
+
+Notes:
+
+- All five services have healthchecks; `docker compose ps` shows them `(healthy)` once the stack is up.
+- Database data survives container restarts by default. Set `RESET_DB_ON_START=true` in `.env` to restore the old wipe-and-reseed-on-every-start behavior.
+- After changing dependencies in `pyproject.toml` / `poetry.lock`, run `docker compose up --build --renew-anon-volumes` so the anonymous `/app/.venv` volume picks up the new packages.
+- `SECRET_KEY` values must not contain `$`: docker compose interpolates `$...` sequences inside `env_file` values, and the container would receive a different key than the file.
+
+### Railway
+
+Railway builds the Dockerfile directly (docker-compose.yaml and nginx are compose-only there); TLS terminates at Railway's edge. Set these Variables in the service:
+
+| Variable | Value |
+| --- | --- |
+| `PRODUCTION` | `True` |
+| `SECRET_KEY` | random `[A-Za-z0-9]` string (no `$`) |
+| `ALLOWED_HOSTS` | `composearch.up.railway.app` |
+| `CSRF_TRUSTED_ORIGINS` | `https://composearch.up.railway.app` (scheme required, no trailing slash) |
+| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_HOST` / `POSTGRES_DB` / `POSTGRES_NAME` / `POSTGRES_PORT` | Railway Postgres reference values |
+| `REDIS_URL` | Railway Redis reference URL |
+| `DJANGO_SUPERUSER_USERNAME` / `_EMAIL` / `_PASSWORD` | optional; admin auto-created from env on first boot |
+| `RESET_DB_ON_START` | optional; `true` = wipe + reseed on every deploy |
+
+`PRODUCTION=True` additionally sets `SECURE_PROXY_SSL_HEADER` (Django trusts Railway's `X-Forwarded-Proto`) and marks session/CSRF cookies `Secure`. The startup log prints the effective mode (`PRODUCTION=...` plus the DB engine), so a deploy that forgot `PRODUCTION=True` is easy to spot in the deploy logs.
+
+### Self-hosting with HTTPS (compose)
+
+nginx listens on port 80 and carries commented TLS scaffolding: drop a certificate and key into `./certs/`, uncomment the four `ssl` lines in `nginx.conf`, and republish the port (e.g. `443:443`). The `./certs` mount is already wired in docker-compose.yaml; the directory is git- and docker-ignored so private keys never enter the repo or the image.
+
 ## The DistributorSourceModel
 
 In order to have a fully functional app, the database must be populated with distributor data.

@@ -132,3 +132,6 @@ dmypy.json
 
 # VS Code
 .vscode
+
+# TLS certificates - private keys never belong in git
+certs/

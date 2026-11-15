@@ -1,40 +1,26 @@
-FROM --platform=amd64 mcr.microsoft.com/playwright/python:v1.64.1-noble
+# syntax=docker/dockerfile:1
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-ENV PIP_DEFAULT_TIMEOUT=100
-ENV POETRY_VIRTUALENVS_CREATE=false
-
-# Upgrade pip
-RUN python3 -m pip install --upgrade pip
-
-# Install Poetry
-RUN pip install poetry && poetry --version
-
-# Set the working directory in the container
+# --- builder: resolve dependencies into /app/.venv ---
+FROM mcr.microsoft.com/playwright/python:v1.64.1-noble AS builder
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
+    POETRY_NO_INTERACTION=1 POETRY_VIRTUALENVS_CREATE=true POETRY_VIRTUALENVS_IN_PROJECT=true
 WORKDIR /app
+RUN python3 -m pip install --upgrade pip poetry
+COPY pyproject.toml poetry.lock ./
+# Runtime deps only - dev deps stay out of the image
+RUN poetry install --only main --no-root
 
-# Copy the project code
+# --- runtime: copy the resolved venv, then the code ---
+FROM mcr.microsoft.com/playwright/python:v1.64.1-noble AS runtime
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PATH="/app/.venv/bin:$PATH"
+WORKDIR /app
+# Dependency layer: changes only when the lockfile changes
+COPY --from=builder /app/.venv /app/.venv
 COPY . .
-
-# Copy the run.sh file
-COPY run.sh .
-
-# Copy the pyproject.toml and poetry.lock files
-COPY poetry.lock pyproject.toml ./
-
-# Install project dependencies with Poetry 
-RUN poetry config virtualenvs.in-project true && \
-    poetry install --no-interaction --no-ansi
-
-# Copy the sample environment file
-RUN mv .env.sample .env
-
-# Run Playwright installation commands
-RUN playwright install --with-deps chromium
-
+# Windows/macOS build contexts carry no exec bit; make the entrypoint runnable
+# regardless of where the image is built (Railway's git checkout already has +x)
 RUN chmod +x run.sh
-
-# Run the application
+# The base image ships browsers+deps; this is a fast no-op/repair step
+RUN playwright install chromium
+EXPOSE 8000
 CMD ["./run.sh"]

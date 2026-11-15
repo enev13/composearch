@@ -6,4 +6,5 @@ urlpatterns = [
     path('', views.home_view, name='home'),
     path('search/', views.search_view, name='search'),
     path('search/fallback/', views.search_fallback_view, name='search_fallback'),
+    path('health/', views.health_view, name='health'),
 ]

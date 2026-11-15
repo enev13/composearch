@@ -4,29 +4,44 @@ services:
       context: .
     volumes:
       - .:/app
+      # Anonymous volume: keep the image's Linux venv over the bind-mounted
+      # host .venv (Windows venvs cannot run inside the container)
+      - /app/.venv
     expose:
       - 8000
     env_file:
       - .env
     depends_on:
-      - db
-      - redis
-    ports:
-      - 8000:8000
-    entrypoint: poetry run
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     command: sh run.sh
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    stop_grace_period: 30s
     restart: always
 
   nginx:
-    image: nginx:latest
+    image: nginx:1.28-alpine
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./certs:/etc/nginx/certs
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./certs:/etc/nginx/certs:ro
     ports:
       - 80:80
-      # - 443:443
     depends_on:
-      - web
+      web:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://127.0.0.1/healthz || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     restart: always
 
   db:
@@ -35,12 +50,23 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
       - .env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_NAME"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     restart: always
     ports:
       - 5432:5432
 
   redis:
-    image: redis:latest
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: always
     ports:
       - 6379:6379
@@ -50,11 +76,20 @@ services:
       context: .
     volumes:
       - .:/app
+      - /app/.venv
     env_file:
       - .env
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     command: celery -A composearch worker -B --loglevel=info
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A composearch inspect ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    stop_grace_period: 60s
     restart: always
 
 volumes:
