@@ -14,12 +14,7 @@ services:
     ports:
       - 8000:8000
     entrypoint: poetry run
-    command: >
-      sh -c "poetry run python3 manage.py collectstatic --noinput &&
-        poetry run python3 manage.py migrate &&
-        poetry run python3 manage.py flush --no-input &&
-        poetry run python3 manage.py loaddata distributors.json &&
-        uvicorn composearch.asgi:application --host 0.0.0.0 --port 8000"
+    command: sh run.sh
     restart: always
 
   nginx:
