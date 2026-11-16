@@ -81,7 +81,7 @@ class GotoCrashContext(MockContext):
 
 
 class SelectorTimeoutElement(MockElement):
-    async def wait_for(self, timeout: float = 0) -> None:
+    async def wait_for(self, timeout: float = 0, **kwargs: Any) -> None:
         raise PlaywrightTimeoutError("Selector timed out")
 
 
@@ -200,4 +200,121 @@ class TestFetchResultRecording(TestCase):
         self.assertEqual(stats.total_attempts, 1)
         self.assertEqual(stats.total_successes, 0)
         self.assertEqual(stats.consecutive_failures, 1)
+        self.assertEqual(stats.last_failure_reason, "parse_error")
+
+
+SENECA_SEARCH_HTML = """
+<html><body>
+    <div id="collapse2"><a href="/en/linee/z111">Z111</a></div>
+</body></html>
+"""
+
+SENECA_DETAIL_HTML = """
+<html><body>
+    <div class="sp-buy-description"><strong>Z111</strong></div>
+    <div class="item sp-media-image active"><img src="/media/1579/z111.jpg"></div>
+    <div>&euro; <span class="price-value-container">168.00</span></div>
+</body></html>
+"""
+
+SENECA_DETAIL_NO_PRICE_HTML = """
+<html><body>
+    <div class="sp-buy-description"><strong>Z111</strong></div>
+</body></html>
+"""
+
+
+class _LinkLocator:
+    def __init__(self, href: str | None = None) -> None:
+        self._href = href
+        self.first = self
+
+    async def wait_for(self, timeout: float = 0, **kwargs: Any) -> None:
+        return None
+
+    async def get_attribute(self, name: str) -> str | None:
+        return self._href
+
+
+class DetailNavigatingPage(MockPage):
+    """Page double that serves search HTML, then detail HTML after a link
+    follow, mirroring Seneca exposing the price only on the detail page."""
+
+    def __init__(self, detail_html: str, link_href: str = "/en/linee/z111") -> None:
+        super().__init__()
+        self._detail_html = detail_html
+        self._link_href = link_href
+        self.navigated_urls: list[str] = []
+
+    async def goto(self, *args: Any) -> Any:
+        url = args[0]
+        self.navigated_urls.append(url)
+        if "prodsearch" in url:
+            self._html = SENECA_SEARCH_HTML
+        else:
+            self._html = self._detail_html
+        self.url = url
+        return True
+
+    async def content(self, *args: Any) -> str:
+        return getattr(self, "_html", "")
+
+    def locator(self, *args: Any) -> MockLocator:
+        selector = args[0]
+        if "a[href" in selector:
+            return _LinkLocator(self._link_href)
+        return MockLocator()
+
+
+class DetailNavigatingContext(MockContext):
+    def __init__(self, detail_html: str, link_href: str = "/en/linee/z111") -> None:
+        super().__init__()
+        self._detail_html = detail_html
+        self._link_href = link_href
+
+    async def new_page(self, *args: Any) -> MockPage:
+        return DetailNavigatingPage(self._detail_html, self._link_href)
+
+
+class TestFetchResultDetailPage(TestCase):
+    def setUp(self) -> None:
+        cache.clear()
+        self.distributor = DistributorSourceModel.objects.create(
+            name="Seneca",
+            base_url="https://www.seneca.it/",
+            search_string="en/prodsearch/?q=%s",
+            currency="EUR",
+            included_vat=0,
+            product_name_selector=".sp-buy-description strong",
+            product_url_selector='#collapse2 a[href^="/en/"]',
+            product_picture_url_selector=".sp-media-image.active img",
+            product_price_selector=".price-value-container",
+            price_on_detail_page=True,
+            active=True,
+        )
+
+    async def test_follows_link_to_detail_page(self):
+        product = await fetch_result(
+            DetailNavigatingContext(SENECA_DETAIL_HTML),
+            self.distributor,
+            "z111",
+        )
+
+        self.assertEqual(product.name, "Z111")
+        self.assertEqual(product.price, 168.00)
+        self.assertEqual(product.url, "https://www.seneca.it/en/linee/z111")
+        self.assertEqual(
+            product.picture_url, "https://www.seneca.it/media/1579/z111.jpg"
+        )
+
+    async def test_no_price_on_detail_page_is_parse_error(self):
+        product = await fetch_result(
+            DetailNavigatingContext(SENECA_DETAIL_NO_PRICE_HTML),
+            self.distributor,
+            "z111",
+        )
+
+        self.assertIsNone(product)
+        stats = await DistributorStats.objects.filter(distributor=self.distributor).afirst()
+        self.assertIsNotNone(stats)
         self.assertEqual(stats.last_failure_reason, "parse_error")

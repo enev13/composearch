@@ -55,7 +55,7 @@ def create_distributors(count: int) -> None:
 
 
 class FastElement:
-    async def wait_for(self, timeout=0) -> None:
+    async def wait_for(self, timeout=0, **kwargs) -> None:
         return
 
 

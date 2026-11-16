@@ -16,6 +16,14 @@ class DistributorSourceModel(models.Model):
     product_url_selector = models.CharField(max_length=1024, null=False, blank=False)
     product_picture_url_selector = models.CharField(max_length=1024, null=False, blank=False)
     product_price_selector = models.CharField(max_length=1024, null=False, blank=False)
+    price_on_detail_page = models.BooleanField(
+        default=False,
+        help_text=(
+            "When true, the product link found on the search results page is "
+            "followed to the product detail page, where the price (and the rest "
+            "of the product data) is scraped."
+        ),
+    )
     active = models.BooleanField(default=True)
     probe_query = models.CharField(
         max_length=256,

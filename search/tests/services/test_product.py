@@ -130,3 +130,26 @@ class TestParseHTML(TestCase):
     async def test_parse_html_no_result(self):
         product = await Product.from_html(self.distributor, "")
         self.assertIsNone(product)
+
+    async def test_parse_html_with_url_override(self):
+        # When the product URL is supplied directly (e.g. resolved by following
+        # a link from the search results to a detail page), it is used as-is
+        # instead of being scraped from the HTML.
+        html = """
+        <html>
+            <body>
+                <div id="name">Z111</div>
+                <div class="item sp-media-image active"><img src="/media/1579/z111.jpg"></div>
+                <div><span class="price">168.00</span></div>
+            </body>
+        </html>
+        """
+        detail_url = "https://test.com/catalog/z111"
+        product = await Product.from_html(
+            self.distributor_0_vat, html, product_url=detail_url
+        )
+        self.assertIsNotNone(product)
+        self.assertEqual(product.name, "Z111")
+        self.assertEqual(product.price, 168.00)
+        self.assertEqual(product.url, detail_url)
+        self.assertEqual(product.picture_url, "https://test.com/media/1579/z111.jpg")

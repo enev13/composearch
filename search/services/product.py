@@ -45,13 +45,21 @@ class Product:
 
     @staticmethod
     async def from_html(
-        distributor: DistributorSourceModel | None, html_content: str, parser: str = "bs4"
+        distributor: DistributorSourceModel | None,
+        html_content: str,
+        parser: str = "bs4",
+        product_url: str | None = None,
     ) -> Product | None:
         """
         Takes a DistributorSourceModel and a html string.
 
         Parses the result and returns a Product object.
         If an error occurs or the product could not be parsed, returns None.
+
+        ``product_url`` optionally provides the resolved product URL directly
+        (e.g. when it was obtained by following a link on the search results
+        page to a product detail page). When omitted, the URL is extracted from
+        the HTML via ``product_url_selector``.
         """
         if not distributor or not html_content:
             return None
@@ -73,10 +81,15 @@ class Product:
                     price /= 1 + Decimal(vat / 100)
                     price = round(price, 2)
 
-                    url = await p.select_element(selector=distributor.product_url_selector, type="href")
-                    url = url.replace(distributor.base_url, "")
-                    url = url.removeprefix("/")
-                    url = urljoin(distributor.base_url, url)
+                    if product_url is not None:
+                        url = product_url
+                    else:
+                        url = await p.select_element(
+                            selector=distributor.product_url_selector, type="href"
+                        )
+                        url = url.replace(distributor.base_url, "")
+                        url = url.removeprefix("/")
+                        url = urljoin(distributor.base_url, url)
 
                     picture_url = await p.select_element(
                         selector=distributor.product_picture_url_selector, type="src"

@@ -34,7 +34,7 @@ return_html = dict(
 
 
 class MockElement:
-    async def wait_for(self, timeout=0) -> None:
+    async def wait_for(self, timeout=0, **kwargs) -> None:
         await asyncio.sleep(WAIT_FOR_TIME)
 
 

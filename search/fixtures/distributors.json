@@ -390,12 +390,13 @@
       "base_url": "https://www.seneca.it/",
       "search_string": "en/prodsearch/?q=%s",
       "currency": "EUR",
-      "product_name_selector": ".lstProdName",
-      "product_url_selector": "#collapse2 a[href^=\"/en/\"]",
-      "product_picture_url_selector": "#collapse2 .lstResProd",
-      "product_price_selector": "",
+      "product_name_selector": ".sp-buy-description strong",
+      "product_url_selector": ".prodRes a",
+      "product_picture_url_selector": ".sp-media-image.active img",
+      "product_price_selector": ".price-value-container",
+      "price_on_detail_page": true,
       "active": true,
-      "included_vat": 22,
+      "included_vat": 0,
       "probe_query": "relay"
     }
   },

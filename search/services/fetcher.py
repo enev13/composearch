@@ -61,11 +61,15 @@ async def _fetch_and_parse(
     if semaphore is None:
         semaphore = _get_fetch_semaphore()
     price_selector = distributor.product_price_selector
+    # When the price lives only on the product detail page, product_url_selector
+    # is used to locate the link to that detail page on the search results.
+    link_selector = distributor.product_url_selector if distributor.price_on_detail_page else None
     html_content = ""
     # A completed fetch that produces nothing usable is a parse error unless
     # a stage below assigns a more specific reason.
     reason = "parse_error"
     start = end = time.perf_counter()
+    detail_url = None
     async with semaphore:
         page = await context.new_page()
         try:
@@ -78,11 +82,40 @@ async def _fetch_and_parse(
             except Exception:
                 reason = "navigation_error"
                 raise
-            try:
-                await page.locator(price_selector).first.wait_for(timeout=BROWSER_TIMEOUT / 2)
-            except Exception:
-                reason = "selector_timeout"
-                raise
+
+            # Distributors that expose the price only on the product detail page
+            # are parsed from there. Follow the product link found on the search
+            # results, then wait for the price on the detail page.
+            if link_selector:
+                try:
+                    await page.locator(link_selector).first.wait_for(timeout=BROWSER_TIMEOUT / 2)
+                except Exception:
+                    reason = "selector_timeout"
+                    raise
+                href = await page.locator(link_selector).first.get_attribute("href")
+                if href:
+                    detail_url = urljoin(distributor.base_url, href)
+                    try:
+                        await page.goto(detail_url)
+                    except PlaywrightTimeoutError:
+                        reason = "timeout"
+                        raise
+                    except Exception:
+                        reason = "navigation_error"
+                        raise
+
+            if price_selector:
+                try:
+                    # On a detail page the price may live inside a collapsed tab
+                    # (present in the DOM but not visible), so wait for attachment
+                    # there; otherwise keep the stricter visible-state wait.
+                    await page.locator(price_selector).first.wait_for(
+                        state="attached" if link_selector else "visible",
+                        timeout=BROWSER_TIMEOUT / 2,
+                    )
+                except Exception:
+                    reason = "selector_timeout"
+                    raise
             try:
                 html_content = await page.content()
             except Exception:
@@ -97,10 +130,13 @@ async def _fetch_and_parse(
             await page.close()
 
     # Parses outside the semaphore so the concurrency cap only covers
-    # browser work.
+    # browser work. When the detail page was followed, its URL is the product
+    # URL (the search-results selectors no longer apply).
     product = None
     if html_content:
-        product = await Product.from_html(distributor=distributor, html_content=html_content)
+        product = await Product.from_html(
+            distributor=distributor, html_content=html_content, product_url=detail_url
+        )
         if product is None:
             reason = "parse_error"
     if product is not None:
