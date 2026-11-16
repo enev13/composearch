@@ -70,10 +70,10 @@
       "base_url": "https://www.omnical.co/",
       "search_string": "search?f_classcode=&f_brand=&page=1&q=%s",
       "currency": "EUR",
-      "product_name_selector": "#product-row-0 > div.tradeproduct-title > a",
-      "product_url_selector": "#product-row-0 > div.tradeproduct-title > a",
-      "product_picture_url_selector": "#product-row-0 > div.tradeproduct-image > img",
-      "product_price_selector": "#product-row-0 > div.tradeproduct-info > div.tradeproduct-description.click > div.tradeproduct-price-search > strong > span:nth-child(2)",
+      "product_name_selector": "div.MuiDataGrid-row div.MuiStack-root a",
+      "product_url_selector": "div.MuiDataGrid-row div.MuiStack-root a",
+      "product_picture_url_selector": "div.MuiDataGrid-row div.MuiStack-root img",
+      "product_price_selector": "div.MuiDataGrid-row div.MuiDataGrid-cell--textRight",
       "active": true,
       "included_vat": 0,
       "probe_query": "Siemens"
@@ -90,7 +90,7 @@
       "product_url_selector": "div.article-listitem div.title a",
       "product_picture_url_selector": "div.article-listitem img.img-classic",
       "product_price_selector": "div.article-listitem div.price",
-      "active": true,
+      "active": false,
       "included_vat": 0,
       "probe_query": "relay"
     }
@@ -102,10 +102,10 @@
       "base_url": "https://industry-electronics.com/",
       "search_string": "suche.html?artsuche=%s&suchen=&suchauswahl=volltext",
       "currency": "EUR",
-      "product_name_selector": "td.descr > strong.h > a",
-      "product_url_selector": "td.descr > strong.h > a",
-      "product_picture_url_selector": "td.img > a > img",
-      "product_price_selector": "td.price > div",
+      "product_name_selector": "td.productname strong",
+      "product_url_selector": "link[rel='canonical']",
+      "product_picture_url_selector": "div.images a.MagicZoomPlus img",
+      "product_price_selector": "div.price",
       "active": true,
       "included_vat": 0,
       "probe_query": "relais"
@@ -118,10 +118,10 @@
       "base_url": "https://bg.rsdelivers.com/",
       "search_string": "productlist/search?query=%s",
       "currency": "EUR",
-      "product_name_selector": "a.list-product-card-component-module-scss-module__62SDtW__title",
-      "product_url_selector": "a.list-product-card-component-module-scss-module__62SDtW__title",
-      "product_picture_url_selector": "img.thumbnail-image-component-module-scss-module__ukhElq__thumb",
-      "product_price_selector": "p.list-product-card-component-module-scss-module__62SDtW__unit-price",
+      "product_name_selector": "a._62SDtW_title",
+      "product_url_selector": "a._62SDtW_title",
+      "product_picture_url_selector": "img.ukhElq_thumb",
+      "product_price_selector": "p._62SDtW_unit-price",
       "active": true,
       "included_vat": 0,
       "probe_query": "relay"
@@ -154,7 +154,7 @@
       "product_url_selector": "div.al_gallery_article_artinfo > div.al_artinfo_headline > a",
       "product_picture_url_selector": "div.al_gallery_article_logos > div.al_artlogo > a > picture > img",
       "product_price_selector": "div.al_artlinks_price > div.productPriceArea > p.productPrice",
-      "active": true,
+      "active": false,
       "included_vat": 19,
       "probe_query": "relais"
     }
@@ -202,7 +202,7 @@
       "product_url_selector": "[class*=\"ManNumberLink\"]",
       "product_picture_url_selector": "img[class*=\"Image\"]",
       "product_price_selector": "[class*=\"TotalPriceValue\"]",
-      "active": true,
+      "active": false,
       "included_vat": 0,
       "probe_query": "relay"
     }
@@ -218,7 +218,7 @@
       "product_url_selector": ".sos-products__item-header a",
       "product_picture_url_selector": ".sos-products__item-image-link img",
       "product_price_selector": ".sos-products__item-pricelist-row-price",
-      "active": true,
+      "active": false,
       "included_vat": 0,
       "probe_query": "relay"
     }
@@ -234,7 +234,7 @@
       "product_url_selector": "[data-testid=\"data-table-product-number\"]",
       "product_picture_url_selector": "[data-testid=\"data-table-product-image\"]",
       "product_price_selector": "[data-testid=\"qty-price\"]",
-      "active": true,
+      "active": false,
       "included_vat": 0,
       "probe_query": "relay"
     }
@@ -250,7 +250,7 @@
       "product_url_selector": ".mfr-part-num a",
       "product_picture_url_selector": ".refine-prod-img",
       "product_price_selector": ".PriceBreakPrice",
-      "active": true,
+      "active": false,
       "included_vat": 0,
       "probe_query": "relay"
     }
@@ -266,7 +266,7 @@
       "product_url_selector": "a.product-link",
       "product_picture_url_selector": ".product-list-image img",
       "product_price_selector": "span.price",
-      "active": true,
+      "active": false,
       "included_vat": 0,
       "probe_query": "relay"
     }
@@ -276,12 +276,12 @@
     "fields": {
       "name": "Comet Electronics",
       "base_url": "https://store.comet.bg/",
-      "search_string": "Catalogue/Search/?keywords=%s",
+      "search_string": "Search/?keywords=%s",
       "currency": "EUR",
       "product_name_selector": "td.p-name a",
       "product_url_selector": "td.p-name a",
       "product_picture_url_selector": "td.p-image img",
-      "product_price_selector": "td.price",
+      "product_price_selector": "td.price strong",
       "active": true,
       "included_vat": 0,
       "probe_query": "relay"
@@ -330,7 +330,7 @@
       "product_url_selector": ".product-item-link",
       "product_picture_url_selector": ".product-image-photo",
       "product_price_selector": ".price",
-      "active": true,
+      "active": false,
       "included_vat": 19,
       "probe_query": "relais"
     }
@@ -342,10 +342,10 @@
       "base_url": "https://www.elektro4000.de/",
       "search_string": "advanced_search_result.php?keywords=%s",
       "currency": "EUR",
-      "product_name_selector": "div.listingbox-price",
-      "product_url_selector": "a[href*=\"::\"] img",
-      "product_picture_url_selector": "a[href*=\"::\"] img",
-      "product_price_selector": "div.listingbox-price",
+      "product_name_selector": "div.lb_title a",
+      "product_url_selector": "div.lb_title a",
+      "product_picture_url_selector": "div.lb_image img",
+      "product_price_selector": "span.standard_price span.value_price",
       "active": true,
       "included_vat": 19,
       "probe_query": "relais"
@@ -372,7 +372,7 @@
     "fields": {
       "name": "EIBMARKT",
       "base_url": "https://www.eibmarkt.com/",
-      "search_string": "",
+      "search_string": "cgi-bin/eibmarkt.storefront/EN/SearchMask?action=Search&PID=STATIC_EN&SearchProductName=%s",
       "currency": "EUR",
       "product_name_selector": "a[href*='/products/']",
       "product_url_selector": "a[href*='/products/']",
@@ -411,7 +411,7 @@
       "product_url_selector": ".custom-product-list-mobile-item h3 a",
       "product_picture_url_selector": ".custom-product-list-mobile-item img",
       "product_price_selector": ".custom-product-list-mobile-item__line-data--price",
-      "active": true,
+      "active": false,
       "included_vat": 19,
       "probe_query": "relais"
     }
