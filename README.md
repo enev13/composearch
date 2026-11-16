@@ -24,55 +24,69 @@ You can see it up and running, deployed on Railway: https://composearch.up.railw
 | Name | Stmts | Miss | Cover |
 |------|-------|------|-------|
 | composearch\\_\_init\_\_.py | 2 | 0 | 100% |
-| composearch\celery.py | 7 | 0 | 100% |
-| composearch\settings.py | 38 | 4 | 89% |
+| composearch\asgi.py | 8 | 8 | 0% |
+| composearch\celery.py | 8 | 0 | 100% |
+| composearch\settings.py | 41 | 7 | 83% |
 | composearch\urls.py | 3 | 0 | 100% |
+| composearch\wsgi.py | 4 | 4 | 0% |
 | search\\_\_init\_\_.py | 0 | 0 | 100% |
-| search\admin.py | 11 | 2 | 82% |
+| search\admin.py | 88 | 2 | 98% |
 | search\apps.py | 4 | 0 | 100% |
 | search\consumers.py | 23 | 0 | 100% |
+| search\management\\_\_init\_\_.py | 0 | 0 | 100% |
+| search\management\commands\\_\_init\_\_.py | 0 | 0 | 100% |
+| search\management\commands\sync_distributors.py | 95 | 1 | 99% |
 | search\migrations\0001_initial.py | 5 | 0 | 100% |
 | search\migrations\0002_distributorsourcemodel_product_currency_selector.py | 4 | 0 | 100% |
 | search\migrations\0003_remove_distributorsourcemodel_product_currency_selector_and_more.py | 4 | 0 | 100% |
 | search\migrations\0004_distributorsourcemodel_active.py | 4 | 0 | 100% |
 | search\migrations\0005_remove_distributorsourcemodel_including_vat_and_more.py | 4 | 0 | 100% |
+| search\migrations\0006_distributorsourcemodel_probe_query_distributorstats.py | 5 | 0 | 100% |
 | search\migrations\\_\_init\_\_.py | 0 | 0 | 100% |
-| search\models.py | 14 | 0 | 100% |
+| search\models.py | 45 | 0 | 100% |
 | search\parsers\\_\_init\_\_.py | 4 | 0 | 100% |
-| search\parsers\base.py | 40 | 8 | 80% |
+| search\parsers\base.py | 43 | 9 | 79% |
 | search\parsers\bs4_parser.py | 27 | 0 | 100% |
 | search\parsers\playwright_parser.py | 31 | 2 | 94% |
 | search\services\\_\_init\_\_.py | 5 | 0 | 100% |
-| search\services\fetcher.py | 38 | 0 | 100% |
+| search\services\browser_service.py | 110 | 8 | 93% |
+| search\services\fetcher.py | 76 | 0 | 100% |
+| search\services\monitoring.py | 39 | 0 | 100% |
+| search\services\probes.py | 48 | 3 | 94% |
 | search\services\product.py | 55 | 0 | 100% |
-| search\services\search_service.py | 38 | 0 | 100% |
-| search\services\stats.py | 40 | 10 | 75% |
-| search\tasks.py | 8 | 0 | 100% |
+| search\services\search_service.py | 49 | 4 | 92% |
+| search\services\stats.py | 41 | 11 | 73% |
+| search\tasks.py | 13 | 0 | 100% |
 | search\tests\\_\_init\_\_.py | 0 | 0 | 100% |
-| search\tests\fixtures\playwright.py | 47 | 4 | 91% |
+| search\tests\fixtures\playwright.py | 75 | 2 | 97% |
 | search\tests\fixtures\products.py | 5 | 0 | 100% |
 | search\tests\parsers\\_\_init\_\_.py | 0 | 0 | 100% |
 | search\tests\parsers\test_base.py | 19 | 1 | 95% |
 | search\tests\parsers\test_bs4_parser.py | 35 | 0 | 100% |
 | search\tests\parsers\test_playwright_parser.py | 35 | 0 | 100% |
 | search\tests\services\\_\_init\_\_.py | 0 | 0 | 100% |
-| search\tests\services\test_fetcher.py | 29 | 0 | 100% |
-| search\tests\services\test_perform_search.py | 16 | 0 | 100% |
+| search\tests\services\test_browser_manager.py | 94 | 5 | 95% |
+| search\tests\services\test_fetcher.py | 124 | 0 | 100% |
+| search\tests\services\test_monitoring.py | 88 | 0 | 100% |
+| search\tests\services\test_perform_search.py | 21 | 0 | 100% |
+| search\tests\services\test_probes.py | 95 | 0 | 100% |
 | search\tests\services\test_product.py | 40 | 0 | 100% |
 | search\tests\services\test_stats.py | 49 | 0 | 100% |
-| search\tests\services\test_stream_search.py | 47 | 0 | 100% |
+| search\tests\services\test_stream_search.py | 102 | 0 | 100% |
+| search\tests\test_admin.py | 118 | 0 | 100% |
 | search\tests\test_consumers.py | 45 | 0 | 100% |
 | search\tests\test_distributors.py | 9 | 0 | 100% |
-| search\tests\test_models.py | 48 | 0 | 100% |
-| search\tests\test_tasks.py | 15 | 0 | 100% |
-| search\tests\test_views.py | 42 | 0 | 100% |
+| search\tests\test_models.py | 99 | 0 | 100% |
+| search\tests\test_sync_distributors.py | 108 | 0 | 100% |
+| search\tests\test_tasks.py | 35 | 0 | 100% |
+| search\tests\test_views.py | 78 | 0 | 100% |
 | search\tests\utils\\_\_init\_\_.py | 0 | 0 | 100% |
 | search\tests\utils\test_helpers.py | 15 | 0 | 100% |
 | search\urls.py | 3 | 0 | 100% |
 | search\utils\\_\_init\_\_.py | 2 | 0 | 100% |
 | search\utils\helpers.py | 10 | 0 | 100% |
-| search\views.py | 14 | 0 | 100% |
-| **TOTAL** | **934** | **31** | **97%** |
+| search\views.py | 43 | 4 | 91% |
+| **TOTAL** | **2235** | **71** | **97%** |
 
 ## Quick Start
 
@@ -162,6 +176,7 @@ Then open http://localhost/ - nginx on host port 80 is the single published entr
 Notes:
 
 - All five services have healthchecks; `docker compose ps` shows them `(healthy)` once the stack is up.
+- The app exposes a `/health/` endpoint (database, cache, and browser state) that the compose healthchecks use — handy for a quick check of any deployment.
 - Database data survives container restarts by default. Set `RESET_DB_ON_START=true` in `.env` to restore the old wipe-and-reseed-on-every-start behavior.
 - After changing dependencies in `pyproject.toml` / `poetry.lock`, run `docker compose up --build --renew-anon-volumes` so the anonymous `/app/.venv` volume picks up the new packages.
 - `SECRET_KEY` values must not contain `$`: docker compose interpolates `$...` sequences inside `env_file` values, and the container would receive a different key than the file.
@@ -204,6 +219,12 @@ For each online store following data is needed:
 - active - indicates whether this distributor will be used in the searches
 - probe_query - search term used by the health probes to test the distributor's selectors; falls back to the default probe query if omitted
 
+## Distributor health monitoring
+
+Every search records per-distributor statistics in `DistributorStats`: attempts, successes, success rate, average response time, and consecutive failures. From these the health status of each distributor is derived — `unknown`, `failing`, `degraded`, or `healthy` — and displayed in the Django admin, which also offers per-row actions to probe, activate, deactivate, or reset the statistics of selected distributors. A run of `DISTRIBUTOR_FAILURE_THRESHOLD` (default 5) consecutive failures automatically deactivates the distributor and flags it as disabled by the monitor, so a broken site does not slow down every search.
+
+To keep the health status current even without user searches, the Celery beat schedule runs the `probe_distributors` task every 6 hours: it re-checks the active distributors' selectors using their `probe_query` (or `PROBE_DEFAULT_QUERY` from the environment) and records the outcome in the same statistics.
+
 ## Keeping the distributor list in sync
 
 `search/fixtures/distributors.json` is the canonical, version-controlled list of distributors. The `sync_distributors` management command updates the database to match it:
@@ -239,6 +260,11 @@ And these are the currently planned steps in its development:
 - [x] Add intermediate "Loading" page for better user experience
 - [x] Replace the "Loading" page with dynamic search results loading using Django Channels
 - [x] Keep statistic of the top 100 most used search queries and use Celery to keep them up-to-date in cache
+- [x] Reorganize the codebase into a services package with dedicated unit tests
+- [x] Manage the Playwright browser lifecycle through a shared browser service
+- [x] Monitor distributor health (recorded statistics, scheduled probes, Django admin UI)
+- [x] Keep the distributor list in sync with the versioned fixture via the `sync_distributors` command
+- [x] Productionize the Docker and Railway deployment
 
 
 ## Further Reading
