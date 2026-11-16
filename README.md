@@ -216,6 +216,7 @@ For each online store following data is needed:
 - product_url_selector - CSS selector for the product url in the search results
 - product_picture_url_selector - CSS selector for the ulr of the product picture in the search results
 - product_price_selector - CSS selector for the product price in the search results
+- price_on_detail_page - when true, the product link found on the search results page is followed to the product detail page, where the price (and the rest of the product data) is scraped
 - active - indicates whether this distributor will be used in the searches
 - probe_query - search term used by the health probes to test the distributor's selectors; falls back to the default probe query if omitted
 
@@ -235,7 +236,7 @@ python manage.py sync_distributors --apply           # create and update rows to
 python manage.py sync_distributors --apply --prune   # also deactivate rows missing from the fixture
 ```
 
-- Distributors are matched by `name`; their definition fields (`base_url`, `search_string`, `currency`, `included_vat`, the CSS selectors and `probe_query`) are updated to match the fixture.
+- Distributors are matched by `name`; their definition fields (`base_url`, `search_string`, `currency`, `included_vat`, the CSS selectors, `price_on_detail_page` and `probe_query`) are updated to match the fixture.
 - Existing rows keep their `active` flag and their `DistributorStats` — manual activation/deactivation decisions and recorded statistics are never overwritten. Rows newly created by the sync take the `active` value from the fixture.
 - `--prune` deactivates distributors missing from the fixture but never deletes them, so their statistics survive.
 - After syncing, re-evaluate the health of the changed distributors from the Django admin (*Test now* action) or by running the `probe_distributors` task.

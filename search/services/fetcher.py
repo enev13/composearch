@@ -13,6 +13,9 @@ from search.services.monitoring import record_outcome
 from search.services.product import Product
 
 CACHE_TIMEOUT: float = config("CACHE_TIMEOUT", cast=float, default=60 * 60)
+# Versions the cache entry schema via the key: entries cached before the
+# schema gained the product URL (plain HTML strings) are never read back.
+CACHE_KEY_VERSION: str = "v2"
 BROWSER_TIMEOUT: float = config("BROWSER_TIMEOUT", cast=float, default=15_000)
 SEARCH_CONCURRENCY_LIMIT: int = config("SEARCH_CONCURRENCY_LIMIT", cast=int, default=6)
 
@@ -37,12 +40,17 @@ def _get_fetch_semaphore() -> asyncio.Semaphore:
     return _fetch_semaphore
 
 
+def _cache_key(url: str) -> str:
+    """Returns the schema-versioned cache key for a search result url."""
+    return f"{CACHE_KEY_VERSION}:{url}"
+
+
 async def _fetch_and_parse(
     context: BrowserContext,
     distributor: DistributorSourceModel,
     url: str,
     semaphore: asyncio.Semaphore | None = None,
-) -> tuple[Product | None, str, float, str]:
+) -> tuple[Product | None, str, str | None, float, str]:
     """
     Takes a BrowserContext, a DistributorSourceModel, a search result url and
     an optional semaphore capping concurrent fetches (the process-wide one
@@ -50,8 +58,10 @@ async def _fetch_and_parse(
 
     Fetches the url and parses the HTML into a Product.
 
-    Returns a (product, html_content, response_ms, reason) tuple, where
-    reason is "" on success and otherwise a slug naming the failing stage:
+    Returns a (product, html_content, detail_url, response_ms, reason)
+    tuple, where detail_url is the product detail page the fetch navigated
+    to (None unless the price lives on the detail page) and reason is ""
+    on success and otherwise a slug naming the failing stage:
     "timeout" (navigation timed out), "navigation_error" (navigation
     failed), "selector_timeout" (price selector never appeared) or
     "parse_error" (page fetched but no product parsed). A failure to open a
@@ -87,22 +97,30 @@ async def _fetch_and_parse(
             # are parsed from there. Follow the product link found on the search
             # results, then wait for the price on the detail page.
             if link_selector:
+                link = page.locator(link_selector).first
                 try:
-                    await page.locator(link_selector).first.wait_for(timeout=BROWSER_TIMEOUT / 2)
+                    await link.wait_for(timeout=BROWSER_TIMEOUT / 2)
                 except Exception:
                     reason = "selector_timeout"
                     raise
-                href = await page.locator(link_selector).first.get_attribute("href")
-                if href:
-                    detail_url = urljoin(distributor.base_url, href)
-                    try:
-                        await page.goto(detail_url)
-                    except PlaywrightTimeoutError:
-                        reason = "timeout"
-                        raise
-                    except Exception:
-                        reason = "navigation_error"
-                        raise
+                # Reuses the locator the wait confirmed, so the href is
+                # read from the element that was matched.
+                href = await link.get_attribute("href")
+                if not href:
+                    # The link matched but carries no href, so there is no
+                    # detail page to follow. Keep the default parse_error
+                    # reason instead of waiting for a price that never
+                    # appears on the search results.
+                    raise ValueError("product link matched without an href")
+                detail_url = urljoin(distributor.base_url, href)
+                try:
+                    await page.goto(detail_url)
+                except PlaywrightTimeoutError:
+                    reason = "timeout"
+                    raise
+                except Exception:
+                    reason = "navigation_error"
+                    raise
 
             if price_selector:
                 try:
@@ -143,7 +161,7 @@ async def _fetch_and_parse(
         reason = ""
 
     response_ms = (end - start) * 1000
-    return product, html_content, response_ms, reason
+    return product, html_content, detail_url, response_ms, reason
 
 
 async def fetch_result(
@@ -160,28 +178,40 @@ async def fetch_result(
     If an exception occurs, returns None.
     """
     url = urljoin(distributor.base_url, distributor.search_string.replace("%s", query))
+    cache_key = _cache_key(url)
 
     # Checks if the url is in the cache.
-    cached_content = cache.get(url, None)
+    cached = cache.get(cache_key, None)
 
     # If the url is in the cache, parses the result. Cached results are not
     # recorded, as they say nothing about current distributor health.
-    if cached_content:
-        log.debug(f"Using cached url: {url}, length: {len(cached_content)}")
-        return await Product.from_html(distributor=distributor, html_content=cached_content)
+    # Entries without HTML (fetches that failed before any content loaded)
+    # are treated as misses so the next search refetches.
+    if cached and cached["html"]:
+        log.debug(f"Using cached url: {url}, length: {len(cached['html'])}")
+        return await Product.from_html(
+            distributor=distributor,
+            html_content=cached["html"],
+            product_url=cached["product_url"],
+        )
 
     # If the url is not in the cache, fetches the url.
-    product, html_content, response_ms, reason = await _fetch_and_parse(context, distributor, url)
+    product, html_content, detail_url, response_ms, reason = await _fetch_and_parse(
+        context, distributor, url
+    )
 
     # Records the outcome for distributor health tracking. Recording never
     # breaks a search.
     await record_outcome(distributor, product, response_ms, reason)
 
-    # If the product could be parsed, stores the result in the cache,
-    # otherwise stores the result in the cache for a much shorter time.
-    if product:
-        cache.set(key=url, value=html_content, timeout=CACHE_TIMEOUT)
-    else:
-        cache.set(key=url, value=html_content, timeout=CACHE_TIMEOUT / 10)
+    # Stores the fetched HTML together with the product URL: for detail-page
+    # distributors the cached HTML is the detail page, which cannot be
+    # re-parsed without the product URL. Failures are cached for a much
+    # shorter time.
+    cache.set(
+        key=cache_key,
+        value={"html": html_content, "product_url": detail_url},
+        timeout=CACHE_TIMEOUT if product else CACHE_TIMEOUT / 10,
+    )
 
     return product

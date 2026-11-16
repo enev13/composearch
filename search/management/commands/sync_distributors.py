@@ -32,6 +32,7 @@ DEFINITION_FIELDS = (
     "product_url_selector",
     "product_picture_url_selector",
     "product_price_selector",
+    "price_on_detail_page",
     "probe_query",
 )
 

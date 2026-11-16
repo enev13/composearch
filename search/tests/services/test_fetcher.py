@@ -205,7 +205,7 @@ class TestFetchResultRecording(TestCase):
 
 SENECA_SEARCH_HTML = """
 <html><body>
-    <div id="collapse2"><a href="/en/linee/z111">Z111</a></div>
+    <div class="prodRes"><a href="/en/linee/z111">Z111</a></div>
 </body></html>
 """
 
@@ -240,10 +240,16 @@ class DetailNavigatingPage(MockPage):
     """Page double that serves search HTML, then detail HTML after a link
     follow, mirroring Seneca exposing the price only on the detail page."""
 
-    def __init__(self, detail_html: str, link_href: str = "/en/linee/z111") -> None:
+    def __init__(
+        self,
+        detail_html: str,
+        link_href: str | None = "/en/linee/z111",
+        absent_selectors: tuple[str, ...] = (),
+    ) -> None:
         super().__init__()
         self._detail_html = detail_html
         self._link_href = link_href
+        self._absent_selectors = absent_selectors
         self.navigated_urls: list[str] = []
 
     async def goto(self, *args: Any) -> Any:
@@ -261,23 +267,41 @@ class DetailNavigatingPage(MockPage):
 
     def locator(self, *args: Any) -> MockLocator:
         selector = args[0]
-        if "a[href" in selector:
+        if any(s in selector for s in self._absent_selectors):
+            return SelectorTimeoutLocator()
+        if "prodRes" in selector:
+            # The product link on the search results page.
             return _LinkLocator(self._link_href)
         return MockLocator()
 
 
 class DetailNavigatingContext(MockContext):
-    def __init__(self, detail_html: str, link_href: str = "/en/linee/z111") -> None:
+    def __init__(
+        self,
+        detail_html: str,
+        link_href: str | None = "/en/linee/z111",
+        absent_selectors: tuple[str, ...] = (),
+    ) -> None:
         super().__init__()
         self._detail_html = detail_html
         self._link_href = link_href
+        self._absent_selectors = absent_selectors
+        # Every page this context opened; lets tests prove a fetch was
+        # served from the cache (no new page) instead of refetched.
+        self.pages: list[DetailNavigatingPage] = []
 
     async def new_page(self, *args: Any) -> MockPage:
-        return DetailNavigatingPage(self._detail_html, self._link_href)
+        page = DetailNavigatingPage(
+            self._detail_html, self._link_href, self._absent_selectors
+        )
+        self.pages.append(page)
+        return page
 
 
 class TestFetchResultDetailPage(TestCase):
     def setUp(self) -> None:
+        # The locmem cache outlives each test, and every test in this class
+        # searches the same url.
         cache.clear()
         self.distributor = DistributorSourceModel.objects.create(
             name="Seneca",
@@ -286,19 +310,19 @@ class TestFetchResultDetailPage(TestCase):
             currency="EUR",
             included_vat=0,
             product_name_selector=".sp-buy-description strong",
-            product_url_selector='#collapse2 a[href^="/en/"]',
+            product_url_selector=".prodRes a",
             product_picture_url_selector=".sp-media-image.active img",
             product_price_selector=".price-value-container",
             price_on_detail_page=True,
             active=True,
         )
 
+    async def _stats(self) -> DistributorStats | None:
+        return await DistributorStats.objects.filter(distributor=self.distributor).afirst()
+
     async def test_follows_link_to_detail_page(self):
-        product = await fetch_result(
-            DetailNavigatingContext(SENECA_DETAIL_HTML),
-            self.distributor,
-            "z111",
-        )
+        context = DetailNavigatingContext(SENECA_DETAIL_HTML)
+        product = await fetch_result(context, self.distributor, "z111")
 
         self.assertEqual(product.name, "Z111")
         self.assertEqual(product.price, 168.00)
@@ -306,15 +330,63 @@ class TestFetchResultDetailPage(TestCase):
         self.assertEqual(
             product.picture_url, "https://www.seneca.it/media/1579/z111.jpg"
         )
+        # The search results page was left for the product detail page.
+        self.assertEqual(
+            context.pages[0].navigated_urls[-1], "https://www.seneca.it/en/linee/z111"
+        )
 
-    async def test_no_price_on_detail_page_is_parse_error(self):
+    async def test_cached_result_reuses_product_url(self):
+        context = DetailNavigatingContext(SENECA_DETAIL_HTML)
+        product = await fetch_result(context, self.distributor, "z111")
+        self.assertEqual(product.url, "https://www.seneca.it/en/linee/z111")
+
+        # The identical search hits the cache. The cached HTML is the detail
+        # page, so re-parsing it must reuse the cached product URL: the
+        # search-results link selector finds nothing on the detail page.
+        cached_product = await fetch_result(context, self.distributor, "z111")
+        self.assertEqual(cached_product, product)
+        # No new page was opened, so the result came from the cache.
+        self.assertEqual(len(context.pages), 1)
+
+    async def test_link_selector_timeout_is_selector_timeout(self):
         product = await fetch_result(
-            DetailNavigatingContext(SENECA_DETAIL_NO_PRICE_HTML),
+            DetailNavigatingContext(SENECA_DETAIL_HTML, absent_selectors=(".prodRes a",)),
             self.distributor,
             "z111",
         )
 
         self.assertIsNone(product)
-        stats = await DistributorStats.objects.filter(distributor=self.distributor).afirst()
+        stats = await self._stats()
+        self.assertIsNotNone(stats)
+        self.assertEqual(stats.last_failure_reason, "selector_timeout")
+
+    async def test_link_without_href_is_parse_error(self):
+        product = await fetch_result(
+            DetailNavigatingContext(
+                SENECA_DETAIL_HTML,
+                link_href=None,
+                absent_selectors=(".price-value-container",),
+            ),
+            self.distributor,
+            "z111",
+        )
+
+        self.assertIsNone(product)
+        stats = await self._stats()
         self.assertIsNotNone(stats)
         self.assertEqual(stats.last_failure_reason, "parse_error")
+
+    async def test_no_price_on_detail_page_is_selector_timeout(self):
+        product = await fetch_result(
+            DetailNavigatingContext(
+                SENECA_DETAIL_NO_PRICE_HTML,
+                absent_selectors=(".price-value-container",),
+            ),
+            self.distributor,
+            "z111",
+        )
+
+        self.assertIsNone(product)
+        stats = await self._stats()
+        self.assertIsNotNone(stats)
+        self.assertEqual(stats.last_failure_reason, "selector_timeout")

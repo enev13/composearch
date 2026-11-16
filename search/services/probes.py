@@ -44,7 +44,7 @@ async def probe_distributor(
     url = urljoin(
         distributor.base_url, distributor.search_string.replace("%s", query)
     )
-    product, _, response_ms, reason = await _fetch_and_parse(
+    product, _, _, response_ms, reason = await _fetch_and_parse(
         context, distributor, url, semaphore=semaphore
     )
     await record_outcome(distributor, product, response_ms, reason)
